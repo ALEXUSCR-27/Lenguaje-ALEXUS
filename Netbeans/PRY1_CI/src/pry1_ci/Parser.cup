@@ -1,0 +1,82 @@
+package pry1_ci;
+
+import java_cup.runtime.*;
+
+parser code  {: 
+    LexerAC lexer;
+    
+    @SuppressWarnings("deprecation")
+    public void Parser(LexerAC lexer) {
+        this.lexer = lexer;
+        this.symbolFactory = new DefaultSymbolFactory();
+    }
+:}
+
+
+
+init with {: :};
+scan with {: return lexer.next_token(); :};
+
+
+
+//Terminales
+
+terminal Identificador;
+
+terminal BOOL, INT, FLOAT, STRING, CHAR, ARREGLO, TRUE, FALSE;
+
+terminal COMENTARIO_SIMPLE, FIN_EXPRESION;
+
+terminal IF, ELSE, ELIF, WHILE, DO_WHILE, FOR, BREAK, RETURN, NULL, MAIN;
+
+terminal SYS_PRINT, SYS_READ;
+
+
+terminal EQEQ, PLUS, EQ, TIMES, MINUS, DIVI, NOT_EQ, POWER, MODULO;
+
+terminal PARENTESISABRE, PARENTESISCIERRA, LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, SEMI, COMA;
+
+terminal NEGACION, CONJUNCION, DISYUNCION, MINUSMINUS, PLUSPLUS, GREATER_THAN, LESS_THAN;
+
+terminal GREATER_THAN_OR_EQ, LESS_THAN_OR_EQ;
+
+terminal STRING_LITERAL;
+terminal INTEGER_LITERAL;
+
+non terminal ini, inicio, literal;
+non terminal Integer expr;
+non terminal bloqueCod;
+non terminal funcion, programa;
+non terminal comentario;
+non terminal def, tipoFuncion;
+non terminal parametro, tipoParametro;
+non terminal invocarFuncion, sentencia,estrucControl, return;
+
+/* Precedences */
+precedence left PLUS, MINUS;
+precedence left TIMES;
+
+start with inicio;
+
+/*Programa Principal*/
+inicio ::= programa;
+programa ::= INT MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+            | funcion programa
+            | comentario programa
+;
+
+funcion	::= def tipoFuncion Identificador PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+          | def tipoFuncion Identificador PARENTESISABRE parametro COMA PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+;
+parametro ::= tipoParametro Identificador;
+
+invocarFuncion ::= Identificador PARENTESISABRE PARENTESISCIERRA 
+                | Identificador PARENTESISABRE Identificador | literal COMA  PARENTESISCIERRA
+;
+
+literal ::= INT
+            |FLOAT
+            |STRING
+            |CHAR
+            |ARREGLO
+;

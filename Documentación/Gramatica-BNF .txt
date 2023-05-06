@@ -1,0 +1,200 @@
+-----------------------------------------------------------------------------------------------------------------------------------
+"Basicos"
+cero ::= 0
+digito ::= [1-9]
+digConCero ::= [0-9]
+letra ::= [a-zA-Z]
+caracteresEspeciales ::= [#|"|$|%|&|'|(|)|*|+|,|\|-|.|/|:|;|<|=|>|?|@|\|[|]|^|_|`|\|{|}|~]
+signo := '-'
+punto ::= '.'
+coma ::= ','
+igual ::= '='
+saltoLinea ::=  '\n'
+llaveCuadradaAbre  ::= '['
+llaveCuadradaCierra  ::= ']'
+llavesCorcheteAbre ::= '{'
+llavesCorcheteCierra ::= '}'
+parentesisAbre  ::= '('
+parentesisCierra  ::= ')'
+finalExpresion ::= $
+aperturaCierreComentario ::= '/'
+aperturaComentarioSimple ::= '@'
+null ::= 'null'
+def ::= 'def'
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+"Identificadores" 
+Identificador ::= letra (letra|digConCero)*
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+"Definicion de tipos"
+tipoFuncion ::=  ‘int’ | ‘bool’ | ‘float’ | ‘char’ | ‘string’ | 'arreglo'
+tipoParametro ::= ‘int’ | ‘bool’ | ‘float’ | ‘char’ | ‘string’ | 'arreglo'
+tipoVariable ::=  ‘int’ | ‘bool’ | ‘float’ | ‘char’ | ‘string’ | 'arreglo'
+tipoArreglo ::= 'int' | 'char'
+tipoDatoEnviado ::= Identificador | literal | invocarFuncion
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+"Tipo: int"
+int	::= cero | intPositivo | intNegativo
+intPositivo ::= digConCero+
+intNegativo	::= signo digito+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Tipo: float"
+float ::= floatCero | floatPositivo | floatNegativo
+floatCero ::= cero punto intPositivo
+floatPositivo ::= intPositivo punto intPositivo
+floatNegativo ::= signo (floatCero | floatPositivo)
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+"Tipo: char"
+char ::= letra ‘{’1,1‘}’ 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Tipo: string"
+string ::=  (char | digConCero| caracteresEspeciales)+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+"Tipo: booleano"
+bool ::= 'true' | 'false' 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+"Tipo: Arreglo"
+arreglo ::= tipoArreglo llaveCuadradaAbre (elementoArreglo coma?)* llaveCuadradaCierra
+elementoArreglo	::= (char|int) | arregloInterno
+arregloInterno	::= llaveCuadradaAbre (elementoArreglo coma?)* llaveCuadradaCierra
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Tipo: Comentario"
+comentario ::= comentarioLinea | comentarioMultiple
+comentarioLinea ::= aperturaComentarioSimple string
+comentarioMultiple ::= aperturaCierreComentario (string saltoLinea*)+ aperturaCierreComentario
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Tipo: Literal"
+literal ::= int|float|string|char|arreglo
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Funciones"
+
+funcion	::= tipoFuncion Identificador parentesisAbre parentesisCierra llavesCorcheteAbre bloqueCod llavesCorcheteCierra
+funcion	::= tipoFuncion Identificador parentesisAbre (parametro coma?)+ parentesisCierra llavesCorcheteAbre bloqueCod llavesCorcheteCierra
+parametro ::= tipoParametro Identificador
+
+invocarFuncion ::= Identificador parentesisAbre parentesisCierra 
+invocarFuncion ::= Identificador parentesisAbre ((Identificador | literal) coma?)+ parentesisCierra
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Programa Principal"
+inicio ::= programa
+programa ::= 'int' 'main' parentesisAbre parentesisCierra llavesCorcheteAbre bloqueCod llavesCorcheteCierra
+programa ::= funcion programa
+programa ::= comentario programa
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Bloques de codigo"
+bloqueCod ::= sentencia | estrucControl | return | comentario
+bloqueCod ::= (sentencia | estrucControl | comentario) bloqueCod
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Bloques de codigo en estructuras de control"
+bloqueControl ::= bloqueCod | break
+break ::= 'break'
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Sentencias"
+sentencia ::= crearVariable finalExpresion 
+sentencia ::= crearAsignarVariable finalExpresion
+sentencia ::= asignarVariable finalExpresion
+sentencia ::= asignarElementoArreglo finalExpresion
+sentencia ::= obtenerDatoArreglo finalExpresion?
+sentencia ::= asignarElementoArreglo finalExpresion
+sentencia ::= obtenerDatoString finalExpresion?
+sentencia ::= asignarElementoString finalExpresion
+sentencia ::= literal + literal 
+sentencia ::= entradaEst finalExpresion
+sentencia ::= salidaEst finalExpresion
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Crear Variables"
+crearVariable ::= tipoVariable Identificador
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Crear y asignar variables"
+crearAsignarVariable ::= crearVariable igual ( literal | expresion | Identificador | invocarFuncion | null | arreglo )
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Sentencias: Asignar variable"
+asignarVariable	::= Identificador igual (literal | expresion | Identificador | invocarFuncion | null | arreglo)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Sentencia: Escribir en salida"
+salidaEst ::= 'sysPrint' parentesisAbre (Identificador | literal) parentesisCierra 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Sentencia: Recibir en entrada"
+entradaEst ::= 'sysRead' parentesisAbre (int|float) parentesisCierra
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Sentencias de Arreglos"
+obtenerDatoArreglo ::= Identificador llaveCuadradaAbre int llaveCuadradaCierra
+asignarElementoArreglo	::= Identificador llaveCuadradaAbre int llaveCuadradaCierra igual (int | char | arregloInterno)
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Sentencias de string"
+obtenerDatoString ::= Identificador llaveCuadradaAbre int llaveCuadradaCierra
+asignarElementoString ::= Identificador llaveCuadradaAbre int llaveCuadradaCierra igual char
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+"Estructuras de Control"
+estrucControl ::= if | elif | else | while | for | whileDo
+if	::= 'if' parentesisAbre condicion parentesisCierra llavesCorcheteAbre bloqueControl llavesCorcheteCierra elif? else?
+elif ::=  if ('elif' parentesisAbre condicion parentesisCierra llavesCorcheteAbre bloqueControl llavesCorcheteCierra)+
+else ::= if 'else' llavesCorcheteAbre bloqueControl llavesCorcheteCierra
+while ::= 'while' parentesisAbre condicion parentesisCierra llavesCorcheteAbre bloqueControl llavesCorcheteCierra
+doWhile  ::= 'do' llavesCorcheteAbre bloqueControl llavesCorcheteCierra 'while' parentesisAbre condicion parentesisCierra
+for ::= 'for' parentesisAbre (crearAsignarVariable | Identificador) coma condicion coma expresionUnaria parentesisCierra llavesCorcheteAbre bloqueControl llavesCorcheteCierra
+condicion ::= bool | expresionRelacion | expresionNegacion
+return	::= 'return' (literal | expresion | Identificador | invocarFuncion) finalExpresion
+
+-----------------------------------------------------------------------------------------------------
+"Expresiones"
+expresion ::= expresionBinaria | expresionUnaria | expresionRelacion | expresionNegacion | expresionConjuntiva
+operando ::= literal | Identificador | invocarFuncion
+------------------------------------------------------------------------------------------------------------------------
+"Expresion: Expresiones Binarias"
+TipoOperadorBinarias ::= int|float
+expresionBinaria ::= operando operadorBinario operando
+expresionBinariaMultiple ::= parentesisAbre? (expresionBinaria| operando) parentesisCierra? operadorBinario parentesisAbre? (expresionBinaria| operando) parentesisCierra?
+operadorBinario	::= '+'|'-'|'/'|'**'|'~'|'^'|'*'
+
+-------------------------------------------------------------------------------------------------------------------------
+"Expresion: Expresiones Unarias"
+TipoOperadorUnarias ::= int|float
+expresionUnaria	::= operando operadorUnarias
+expresionUnaria	::= signo operando
+operadorUnarias	::= '--'|'++'
+
+-----------------------------------------------------------------------------------------------------------------------------
+"Expresion: Expresiones Relacionales"
+TipoOperadorRelaciones ::= int|float|bool
+expresionRelacion ::= operando operadorRelacional operando
+expresionRelacion ::= operando operadorComparacion operando
+operadorRelacional ::= '>'|'<'|'>='|'<='
+operadorComparacion	::= '=='|'!='
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+"Expresion: Expresiones Conjuntiva"
+TipoOperadorConjuntivas ::= arreglo
+expresionConjuntiva	::= operando operadorConjuntiva operando
+expresionConjuntivaMultiple ::= (expresionConjuntiva | operando) operadorConjuntiva (expresionConjuntiva | operando )
+operadorConjuntiva	::= '^'|'#'
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+"Expresion: Negacion"
+TipoOperadorNegacion::= invocarFuncion|char | bool
+expresionNegacion ::= operadorNegacion operando 
+operadorNegacion ::= '!'
