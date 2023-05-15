@@ -33,7 +33,7 @@ tipoFuncion ::=  ‘int’ | ‘bool’ | ‘float’ | ‘char’ | ‘string�
 tipoParametro ::= ‘int’ | ‘bool’ | ‘float’ | ‘char’ | ‘string’ | 'arreglo'
 tipoVariable ::=  ‘int’ | ‘bool’ | ‘float’ | ‘char’ | ‘string’ | 'arreglo'
 tipoArreglo ::= 'int' | 'char'
-tipoDatoEnviado ::= Identificador | literal | invocarFuncion
+tipoDatoEnviado ::= Identificador | literal | crearFuncion
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 "Tipo: int"
@@ -63,6 +63,8 @@ bool ::= 'true' | 'false'
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 "Tipo: Arreglo"
+arreglo ::= Identificador LLAVESCUADABRE LLAVESCUADCIERRA  arr1[]
+crearArrgelo ::= tipoArreglo arreglo
 arreglo ::= tipoArreglo llaveCuadradaAbre (elementoArreglo coma?)* llaveCuadradaCierra
 elementoArreglo	::= (char|int) | arregloInterno
 arregloInterno	::= llaveCuadradaAbre (elementoArreglo coma?)* llaveCuadradaCierra
@@ -80,12 +82,12 @@ literal ::= int|float|string|char|arreglo
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 "Funciones"
 
-funcion	::= tipoFuncion Identificador parentesisAbre parentesisCierra llavesCorcheteAbre bloqueCod llavesCorcheteCierra
-funcion	::= tipoFuncion Identificador parentesisAbre (parametro coma?)+ parentesisCierra llavesCorcheteAbre bloqueCod llavesCorcheteCierra
+funcion	::= Identificador parentesisAbre parentesisCierra llavesCorcheteAbre bloqueCod llavesCorcheteCierra
+funcion	::= Identificador parentesisAbre (parametro coma?)+ parentesisCierra llavesCorcheteAbre bloqueCod llavesCorcheteCierra
 parametro ::= tipoParametro Identificador
 
-invocarFuncion ::= Identificador parentesisAbre parentesisCierra 
-invocarFuncion ::= Identificador parentesisAbre ((Identificador | literal) coma?)+ parentesisCierra
+crearFuncion ::= tipoFuncion Identificador parentesisAbre parentesisCierra 
+crearFuncion ::= tipoFuncion Identificador parentesisAbre ((Identificador | literal) coma?)+ parentesisCierra
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 "Programa Principal"
@@ -124,11 +126,11 @@ crearVariable ::= tipoVariable Identificador
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 "Crear y asignar variables"
-crearAsignarVariable ::= crearVariable igual ( literal | expresion | Identificador | invocarFuncion | null | arreglo )
+crearAsignarVariable ::= crearVariable igual ( literal | expresion | Identificador | crearFuncion | null | arreglo )
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 "Sentencias: Asignar variable"
-asignarVariable	::= Identificador igual (literal | expresion | Identificador | invocarFuncion | null | arreglo)
+asignarVariable	::= Identificador igual (literal | expresion | Identificador | crearFuncion | null | arreglo)
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 "Sentencia: Escribir en salida"
@@ -158,12 +160,12 @@ while ::= 'while' parentesisAbre condicion parentesisCierra llavesCorcheteAbre b
 doWhile  ::= 'do' llavesCorcheteAbre bloqueControl llavesCorcheteCierra 'while' parentesisAbre condicion parentesisCierra
 for ::= 'for' parentesisAbre (crearAsignarVariable | Identificador) coma condicion coma expresionUnaria parentesisCierra llavesCorcheteAbre bloqueControl llavesCorcheteCierra
 condicion ::= bool | expresionRelacion | expresionNegacion
-return	::= 'return' (literal | expresion | Identificador | invocarFuncion) finalExpresion
+return	::= 'return' (literal | expresion | Identificador | crearFuncion) finalExpresion
 
 -----------------------------------------------------------------------------------------------------
 "Expresiones"
 expresion ::= expresionBinaria | expresionUnaria | expresionRelacion | expresionNegacion | expresionConjuntiva
-operando ::= literal | Identificador | invocarFuncion
+operando ::= literal | Identificador | crearFuncion
 ------------------------------------------------------------------------------------------------------------------------
 "Expresion: Expresiones Binarias"
 TipoOperadorBinarias ::= int|float
@@ -174,9 +176,9 @@ operadorBinario	::= '+'|'-'|'/'|'**'|'~'|'^'|'*'
 -------------------------------------------------------------------------------------------------------------------------
 "Expresion: Expresiones Unarias"
 TipoOperadorUnarias ::= int|float
-expresionUnaria	::= operando operadorUnarias
+expresionUnaria	::= operando operadorUnario
 expresionUnaria	::= signo operando
-operadorUnarias	::= '--'|'++'
+operadorUnario	::= '--'|'++'
 
 -----------------------------------------------------------------------------------------------------------------------------
 "Expresion: Expresiones Relacionales"
@@ -195,6 +197,6 @@ operadorConjuntiva	::= '^'|'#'
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 "Expresion: Negacion"
-TipoOperadorNegacion::= invocarFuncion|char | bool
+TipoOperadorNegacion::= crearFuncion|char | bool
 expresionNegacion ::= operadorNegacion operando 
 operadorNegacion ::= '!'

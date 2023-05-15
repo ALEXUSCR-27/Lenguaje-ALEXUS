@@ -43,25 +43,31 @@ import java_cup.runtime.*;
 %}
 
 
-LineTerminator = \r|\n|\r\n
-InputCharacter = [^\r\n]
-WhiteSpace = {LineTerminator} | [ \t\f]
+FinLinea = \r|\n|\r\n
 
-/* comments */
-Comment  = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
+CaracterChar = [^\r\n]
+EspacioB = {FinLinea} | [ \t\f]
 
-TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/" //esto cambia
-// Comment can be last line of the file, without line terminator.
-EndOfLineComment = "//" {InputCharacter}* {LineTerminator}?
-DocumentationComment = "/**" {CommentContent} "*"+ "/"
-CommentContent = ([^*] | \*+ [^/*])*
+/* Comentarios */
+Comentario  = {ComentarioM} | {ComentarioL}
 
-Identifier = [:jletter:][:jletterdigit:]*
+ComentarioM = "/_" [^*] ~"_/" | "/*" "*"+ "/" 
+ComentarioL = "@" {CaracterChar}* {FinLinea}
 
-DecIntegerLiteral = 0 | [1-9][0-9]*
+// Identificador
+Identificador = [:jletter:][:jletterdigit:]*
 
+//Enteros
+Entero = 0 | {EnteroP} | {EnteroN}
+EnteroP = [1-9][0-9]*
+EnteroN = -{EnteroP}
 
-%state CADENA
+Flotante = {FlotanteC} | {FlotanteP} | {FlotanteN}
+FlotanteC = 0 \. [0-9]+
+FlotanteP = {EnteroP} \. [0-9]+
+FlotanteN = - ({FlotanteC}|{FlotanteP})
+
+%state CADENA, CHAR
 
 %%
 
@@ -76,11 +82,10 @@ DecIntegerLiteral = 0 | [1-9][0-9]*
 <YYINITIAL> "float" {return symbol(sym.FLOAT);}
 <YYINITIAL> "string" {return symbol(sym.STRING);}
 <YYINITIAL> "char" {return symbol(sym.CHAR);}
-<YYINITIAL> "arreglo" {return symbol(sym.ARREGLO);}
 
 <YYINITIAL> "true" {return symbol(sym.TRUE);}
 <YYINITIAL> "false" {return symbol(sym.FALSE);}
-<YYINITIAL> "@" {return symbol(sym.COMENTARIO_SIMPLE);}
+<YYINITIAL> "@" {return symbol(sym.COMENTARIO);}
 
 
 /*Control*/
@@ -88,27 +93,23 @@ DecIntegerLiteral = 0 | [1-9][0-9]*
 <YYINITIAL> "elif" {return symbol(sym.ELIF);}
 <YYINITIAL> "else" {return symbol(sym.ELSE);}
 <YYINITIAL> "while" {return symbol(sym.WHILE);}
-<YYINITIAL> "doWhile" {return symbol(sym.DO_WHILE);} //??
+<YYINITIAL> "do" {return symbol(sym.DO_WHILE);} 
 <YYINITIAL> "for" {return symbol(sym.FOR);}
 <YYINITIAL> "break" {return symbol(sym.BREAK);}
 <YYINITIAL> "return" {return symbol(sym.RETURN);}
-<YYINITIAL> "$" {return symbol(sym.FIN_EXPRESION);}//??
-<YYINITIAL> "null" {return symbol(sym.NULL);}
+<YYINITIAL> "$" {return symbol(sym.FIN_EXPRESION);}
 
 <YYINITIAL> "sysPrint" {return symbol(sym.SYS_PRINT);}
 <YYINITIAL> "sysRead" {return symbol(sym.SYS_READ);}
 
-
+	
 <YYINITIAL> {
 
-    /*identifiers*/
-    {Identifier} { return symbol(sym.Identificador, yytext()); }
-
-    /*literals*/
-    {DecIntegerLiteral} {return symbol(sym.INTEGER_LITERAL, Integer.parseInt(yytext()));}
-    \"                  {string.setLength(0); yybegin(CADENA);}
+    /* Identificadores */
+    {Identificador} { return symbol(sym.Identificador, yytext()); }
     
-    //Operators
+    //{main} {return symbol(sym.MAIN, yytext());}
+    // Operadores
     "=="    {return symbol(sym.EQEQ);}
     "="     {return symbol(sym.EQ);}
     "+"     {return symbol(sym.PLUS);}
@@ -119,6 +120,8 @@ DecIntegerLiteral = 0 | [1-9][0-9]*
     ")"     {return symbol(sym.PARENTESISCIERRA);}
     "{"     {return symbol(sym.LLAVESCORCHETEABRE);}
     "}"     {return symbol(sym.LLAVESCORCHETECIERRA);}
+    "["     {return symbol(sym.LLAVESCUADABRE);}
+    "]"     {return symbol(sym.LLAVESCUADCIERRA);}
     ";"     {return symbol(sym.SEMI);}
     ","     {return symbol(sym.COMA);}
     "!"     {return symbol(sym.NEGACION);}
@@ -134,23 +137,35 @@ DecIntegerLiteral = 0 | [1-9][0-9]*
     "**"    {return symbol(sym.POWER);}
     "~"     {return symbol(sym.MODULO);}
 
-
+    // Literales
+	// Numeros
+	{Entero}	{return symbol(sym.L_ENTERO, Integer.valueOf(yytext()));}
+	{Flotante}	{return symbol(sym.L_FLOTANTE, Float.valueOf(yytext()));}
+	
+	// Booleanos
+	"true"		{return symbol(sym.L_BOOLEANO, true);}
+	"false"		{return symbol(sym.L_BOOLEANO, false);}
     
+    //Entrada y salida estandar
+	"sys_read"	{return symbol(sym.SYS_READ);}
+	"sys_print"  {return symbol(sym.SYS_PRINT);}
 
+    \'			{yybegin(CHAR);}
+    // Strings 
+    \"			{yybegin(CADENA); string.setLength(0);}
+    
     /*comments*/
-    {Comment} {/*ignore*/}
+    {Comentario} {return symbol(sym.COMENTARIO);}
 
     /*whitespace*/
-    {WhiteSpace} {/*ignore*/}
+    {EspacioB} {/*ignore*/}
 
 
     
 }
 
 <CADENA> {
-    \"      {yybegin(YYINITIAL);
-            return symbol(sym.STRING_LITERAL,
-            string.toString());}
+    \"      {yybegin(YYINITIAL); return symbol(sym.STRING_LITERAL, string.toString());}
     [^\n\r\"\\]+    {string.append(yytext());}
     \\t     {string.append('\t');}
     \\n     {string.append('\n');}
@@ -158,7 +173,40 @@ DecIntegerLiteral = 0 | [1-9][0-9]*
     \\\"    {string.append('\"');}
     \\      {string.append('\\');}
 
+    // Error 
+	\\.	{ msgErr = "[Error lexico] Secuencia de escape ilegal:" + yytext() + "\" en la linea "+(yyline+1)+", columna "+(yycolumn+1);
+    System.err.println(msgErr);}
+	{FinLinea}	{msgErr = "[Error lexico] String incompleto:" + yytext() + "\" en la linea "+(yyline+1)+", columna "+(yycolumn+1);
+    System.err.println(msgErr);}
+}
 
+<CHAR> {
+	{CaracterChar}\'	{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, yytext().charAt(0));}
+	
+	//Secuencias de escape de caracteres
+	"\\b"\'				{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, '\b');}
+	"\\t"\'				{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, '\t');}
+	"\\n"\'				{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, '\n');}
+	"\\f"\'				{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, '\f');}
+	"\\r"\'				{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, '\r');}
+	"\\\""\'			{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, '\"');}
+	"\\'"\'				{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, '\'');}	
+	"\\\\"\'			{yybegin(YYINITIAL);
+						 return symbol(sym.L_CHAR, '\\');}
+
+	//Errores
+	\\.	{ msgErr = "[Error lexico] Secuencia de escape ilegal:" + yytext() + "\" en la linea "+(yyline+1)+", columna "+(yycolumn+1);
+    System.err.println(msgErr);}
+	{FinLinea}	{msgErr = "[Error lexico] Literal caracter incompleto:" + yytext() + "\" en la linea "+(yyline+1)+", columna "+(yycolumn+1);
+    System.err.println(msgErr);}
 }
 
 

@@ -1,0 +1,99 @@
+
+package pry1_ci;
+
+import java_cup.runtime.*;
+
+class Parser;
+parser code  {: 
+    LexerAC lexer;
+    
+    @SuppressWarnings("deprecation")
+    public void Parser(LexerAC lexer) {
+        this.lexer = lexer;
+        this.symbolFactory = new DefaultSymbolFactory();
+    }
+:};
+
+
+
+init with {: :};
+scan with {: return lexer.next_token(); :};
+
+
+
+// Terminales
+terminal MAIN, FIN_EXPRESION;
+terminal IF, ELSE, ELIF, WHILE, DO_WHILE, FOR, BREAK, RETURN;
+terminal BOOL, CHAR, FLOAT, INT, STRING, TRUE, FALSE;
+
+// Comentarios
+terminal COMENTARIO;
+
+// Entrada y salida estandar
+terminal SYS_PRINT, SYS_READ;
+
+// Operadores
+terminal EQEQ, PLUS, EQ, TIMES, MINUS, DIVI, NOT_EQ, POWER, MODULO;
+terminal NEGACION, CONJUNCION, DISYUNCION, MINUSMINUS, PLUSPLUS, GREATER_THAN, LESS_THAN;
+terminal GREATER_THAN_OR_EQ, LESS_THAN_OR_EQ;
+
+// Parentesis
+terminal PARENTESISABRE, PARENTESISCIERRA, LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, SEMI, COMA;
+terminal LLAVESCUADABRE, LLAVESCUADCIERRA;
+// Literales
+terminal java.lang.Number L_ENTERO;
+terminal java.lang.Number L_FLOTANTE;
+terminal java.lang.Boolean L_BOOLEANO;
+terminal java.lang.Character L_CHAR;
+terminal java.lang.String STRING_LITERAL;
+
+// Identificador
+terminal java.lang.String Identificador;
+
+// No terminales
+
+// Estructura del programa
+non terminal inicio, programa, bloqueCod, return, bloqueControl;
+
+// Funciones
+non terminal crearFuncion, funcion, parametro, tipoParametro;
+
+// Sentencias
+non terminal sentencia, crearVariable, crearAsignarVariable, asignarVariable;
+non terminal asignarElementoArreglo, obtenerDatoArreglo;//, obtenerDatoString, asignarElementoString;
+non terminal entradaEst, salidaEst;
+
+// Estructuras de control
+non terminal estrucControl, if, elif, else, while, condicion, break;
+
+// Expresiones
+non terminal expresion, operando;
+non terminal expresionBinaria, expresionUnaria, expresionRelacion, expresionNegacion, expresionConjuntiva;
+non terminal operadorNegacion, operadorBinario, operadorRelacional, operadorUnario, operadorComparacion, operadorConjuntiva;
+
+// Tipos
+non terminal literal;
+non terminal arreglo, crearArreglo;//, elementoArreglo;
+non terminal tipoVariable, tipoFuncion, tipoArreglo;
+
+
+/* Precedencia */
+precedence left PLUS, MINUS;
+precedence left TIMES;
+precedence left EQEQ;
+
+start with inicio;
+
+/*Programa Principal*/
+inicio ::= programa;
+programa ::= tipoFuncion MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA;
+
+tipoFuncion ::=  INT 
+                | BOOL 
+                | FLOAT 
+;
+
+bloqueCod ::= return;
+return ::= RETURN literal FIN_EXPRESION
+         | RETURN Identificador FIN_EXPRESION
+;

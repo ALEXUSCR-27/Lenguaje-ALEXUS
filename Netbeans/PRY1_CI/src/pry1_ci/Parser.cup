@@ -2,6 +2,27 @@ package pry1_ci;
 
 import java_cup.runtime.*;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+
+/*
+action code {:
+    HashMap<String, ArrayList<String>> listaTablasSimbolos = new HashMap<String, ArrayList<String>>();
+    String tablaActual;
+
+    public void imprimirTabla() {
+        for (String key: listaTablasSimbolos.keySet()) {
+            System.out.println("Tabla de simbolo: "+ key);
+            System.out.println("Valores: ");
+            for (String item : listaTablasSimbolos.get(key)) {
+                System.out.println(item);
+            }
+            System.out.println("");
+        }
+    }
+:}
+*/
 parser code  {: 
     LexerAC lexer;
     
@@ -10,7 +31,9 @@ parser code  {:
         this.lexer = lexer;
         this.symbolFactory = new DefaultSymbolFactory();
     }
-:}
+:};
+
+
 
 
 
@@ -19,64 +42,248 @@ scan with {: return lexer.next_token(); :};
 
 
 
-//Terminales
+// Terminales
+terminal MAIN, FIN_EXPRESION;
+terminal IF, ELSE, ELIF, WHILE, DO_WHILE, FOR, BREAK, RETURN;
+terminal BOOL, CHAR, FLOAT, INT, STRING, TRUE, FALSE;
 
-terminal Identificador;
+// Comentarios
+terminal COMENTARIO;
 
-terminal BOOL, INT, FLOAT, STRING, CHAR, ARREGLO, TRUE, FALSE;
-
-terminal COMENTARIO_SIMPLE, FIN_EXPRESION;
-
-terminal IF, ELSE, ELIF, WHILE, DO_WHILE, FOR, BREAK, RETURN, NULL, MAIN;
-
+// Entrada y salida estandar
 terminal SYS_PRINT, SYS_READ;
 
-
+// Operadores
 terminal EQEQ, PLUS, EQ, TIMES, MINUS, DIVI, NOT_EQ, POWER, MODULO;
-
-terminal PARENTESISABRE, PARENTESISCIERRA, LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, SEMI, COMA;
-
 terminal NEGACION, CONJUNCION, DISYUNCION, MINUSMINUS, PLUSPLUS, GREATER_THAN, LESS_THAN;
-
 terminal GREATER_THAN_OR_EQ, LESS_THAN_OR_EQ;
 
-terminal STRING_LITERAL;
-terminal INTEGER_LITERAL;
+// Parentesis
+terminal PARENTESISABRE, PARENTESISCIERRA, LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, SEMI, COMA;
+terminal LLAVESCUADABRE, LLAVESCUADCIERRA;
+// Literales
+terminal java.lang.Number L_ENTERO;
+terminal java.lang.Number L_FLOTANTE;
+terminal java.lang.Boolean L_BOOLEANO;
+terminal java.lang.Character L_CHAR;
+terminal java.lang.String STRING_LITERAL;
 
-non terminal ini, inicio, literal;
-non terminal Integer expr;
-non terminal bloqueCod;
-non terminal funcion, programa;
-non terminal comentario;
-non terminal def, tipoFuncion;
-non terminal parametro, tipoParametro;
-non terminal invocarFuncion, sentencia,estrucControl, return;
+// Identificador
+terminal java.lang.String Identificador;
 
-/* Precedences */
+// No terminales
+
+// Estructura del programa
+non terminal inicio, programa, bloqueCod, return, bloqueControl;
+
+// Funciones
+non terminal crearFuncion, funcion, parametro, tipoParametro;
+
+// Sentencias
+non terminal sentencia, crearVariable, crearAsignarVariable, asignarVariable;
+non terminal asignarElementoArreglo, obtenerDatoArreglo;//, obtenerDatoString, asignarElementoString;
+non terminal entradaEst, salidaEst;
+
+// Estructuras de control
+non terminal estrucControl, if, elif, else, while, condicion, break;
+
+// Expresiones
+non terminal expresion, operando;
+non terminal expresionBinaria, expresionUnaria, expresionRelacion, expresionNegacion, expresionConjuntiva;
+non terminal operadorNegacion, operadorBinario, operadorRelacional, operadorUnario, operadorComparacion, operadorConjuntiva;
+
+// Tipos
+non terminal literal;
+non terminal arreglo, crearArreglo;//, elementoArreglo;
+non terminal tipoVariable, tipoFuncion, tipoArreglo;
+
+
+/* Precedencia */
 precedence left PLUS, MINUS;
 precedence left TIMES;
+precedence left EQEQ;
 
 start with inicio;
 
 /*Programa Principal*/
 inicio ::= programa;
-programa ::= INT MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-            | funcion programa
-            | comentario programa
+programa ::= tipoFuncion MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA;
+
+bloqueCod ::= sentencia 
+            | estrucControl 
+            | return 
+            | sentencia bloqueCod
+            | estrucControl bloqueCod
 ;
 
-funcion	::= def tipoFuncion Identificador PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-          | def tipoFuncion Identificador PARENTESISABRE parametro COMA PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+// Estructuras de control
+estrucControl ::= if 
+                | elif 
+                | else 
 ;
-parametro ::= tipoParametro Identificador;
 
-invocarFuncion ::= Identificador PARENTESISABRE PARENTESISCIERRA 
-                | Identificador PARENTESISABRE Identificador | literal COMA  PARENTESISCIERRA
+if	::= IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+          | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA elif
+          | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA else
+;
+
+elif ::= if ELIF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA;
+
+else ::= if ELSE bloqueControl;
+
+bloqueControl ::= bloqueCod 
+                | break
+;
+
+break ::= BREAK;
+
+return ::= RETURN literal FIN_EXPRESION
+         | RETURN expresion FIN_EXPRESION
+         | RETURN Identificador FIN_EXPRESION
+         | RETURN crearFuncion FIN_EXPRESION
+;
+
+sentencia ::= crearVariable FIN_EXPRESION 
+            | crearAsignarVariable FIN_EXPRESION
+            | asignarVariable FIN_EXPRESION
+            | crearArreglo FIN_EXPRESION
+            | asignarElementoArreglo FIN_EXPRESION
+            | obtenerDatoArreglo FIN_EXPRESION
+            | expresion FIN_EXPRESION
+            //| asignarElementoString FIN_EXPRESION
+            | entradaEst FIN_EXPRESION
+            | salidaEst FIN_EXPRESION
+;
+
+crearVariable ::= tipoVariable Identificador;
+
+crearAsignarVariable ::= crearVariable EQ literal 
+                       | crearVariable EQ expresion 
+                       | crearVariable EQ Identificador 
+                       | crearVariable EQ crearFuncion 
+;
+asignarVariable	::= Identificador EQ literal 
+                  | Identificador EQ expresion 
+                  | Identificador EQ Identificador 
+                  | Identificador EQ funcion 
+;
+
+arreglo ::= LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA;
+crearArreglo ::= tipoArreglo Identificador arreglo;
+asignarElementoArreglo	::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA EQ L_ENTERO 
+                          | Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA EQ  L_CHAR
+;
+// preguntar
+/*elementoArreglo	::= L_CHAR
+                  | L_ENTERO
+                  | L_CHAR COMA elementoArreglo
+                  | L_ENTERO COMA elementoArreglo
+;*/
+obtenerDatoArreglo ::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA
+                     | Identificador LLAVESCUADABRE Identificador LLAVESCUADCIERRA
+;
+
+
+//asignarElementoString ::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA EQ L_CHAR;
+
+//obtenerDatoString ::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA;
+
+entradaEst ::= SYS_READ PARENTESISABRE L_ENTERO PARENTESISCIERRA
+             | SYS_READ PARENTESISABRE L_FLOTANTE PARENTESISCIERRA
+;
+
+salidaEst ::= SYS_PRINT PARENTESISABRE Identificador PARENTESISCIERRA
+            | SYS_PRINT PARENTESISABRE literal PARENTESISCIERRA
+;
+
+
+condicion ::= L_BOOLEANO 
+            | expresionRelacion 
+            | expresionNegacion
+;
+
+expresionRelacion ::= operando operadorRelacional operando
+                    | operando operadorComparacion operando
+;
+operadorRelacional ::= GREATER_THAN
+                     | LESS_THAN
+                     | GREATER_THAN_OR_EQ
+                     | LESS_THAN_OR_EQ
+;
+operadorComparacion	::= EQEQ
+                      | NOT_EQ
+;
+
+// Tipos
+tipoVariable ::=  INT 
+                | BOOL 
+                | FLOAT 
+                | CHAR 
+                | STRING 
+;
+
+tipoFuncion ::=  INT 
+                | BOOL 
+                | FLOAT 
+;
+
+tipoParametro ::= INT 
+                | BOOL 
+                | FLOAT 
+                | CHAR 
+                | STRING 
+                //puedo recibir Identificador?
+;
+
+tipoArreglo ::= INT
+              | CHAR
 ;
 
 literal ::= INT
             |FLOAT
             |STRING
             |CHAR
-            |ARREGLO
 ;
+
+//Expresiones
+expresionNegacion ::= operadorNegacion operando;
+operadorNegacion ::= NEGACION;
+
+expresionUnaria	::= operando operadorUnario
+                  | MINUS operando
+;
+operadorUnario	::= MINUSMINUS
+                  | PLUSPLUS
+;
+expresionBinaria ::= operando operadorBinario operando;
+
+expresionConjuntiva	::= operando operadorConjuntiva operando;
+operadorConjuntiva	::= CONJUNCION
+                      | DISYUNCION
+;
+operando ::= literal 
+           | Identificador 
+           | crearFuncion
+;
+
+
+expresion ::= expresionBinaria 
+            | expresionUnaria 
+            | expresionRelacion 
+            | expresionNegacion 
+            | expresionConjuntiva
+;
+
+//Funcion
+funcion	::= Identificador PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+          | Identificador PARENTESISABRE parametro PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+;  // agregar que tenga mas de un parametro
+parametro ::= tipoParametro Identificador;
+
+
+crearFuncion ::= tipoFuncion Identificador PARENTESISABRE PARENTESISCIERRA 
+                | tipoFuncion Identificador PARENTESISABRE Identificador PARENTESISCIERRA
+                | tipoFuncion Identificador literal  PARENTESISCIERRA
+; // agregar que tenga mas de un parametro
+
+
