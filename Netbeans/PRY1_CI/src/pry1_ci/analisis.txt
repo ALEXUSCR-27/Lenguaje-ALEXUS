@@ -1,0 +1,10 @@
+[Tabla de lexer] Linea: 1 Columna: 1 Tokem: 15, Valor: int (INT)
+[Tabla de lexer] Linea: 1 Columna: 5 Tokem: 2, Valor: main (MAIN)
+[Tabla de lexer] Linea: 1 Columna: 9 Tokem: 38, Valor: ( (PARENTESISABRE)
+[Tabla de lexer] Linea: 1 Columna: 10 Tokem: 39, Valor: ) (PARENTESISCIERRA)
+[Tabla de lexer] Linea: 1 Columna: 11 Tokem: 40, Valor: { (LLAVESCORCHETEABRE)
+[Tabla de lexer] Linea: 1 Columna: 13 Tokem: 11, Valor: return (RETURN)
+[Tabla de lexer] Linea: 1 Columna: 20 Tokem: 46, Valor: 0 (L_ENTERO)
+[Tabla de lexer] Linea: 1 Columna: 21 Tokem: 3, Valor: $ (FIN_EXPRESION)
+[Tabla de lexer] Linea: 1 Columna: 22 Tokem: 41, Valor: } (LLAVESCORCHETECIERRA)
+Cantidad de lexemas encontrados: 9

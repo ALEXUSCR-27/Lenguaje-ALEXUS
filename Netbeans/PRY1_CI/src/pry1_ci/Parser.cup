@@ -23,6 +23,8 @@ action code {:
     }
 :}
 */
+
+
 parser code  {: 
     LexerAC lexer;
     
@@ -31,6 +33,8 @@ parser code  {:
         this.lexer = lexer;
         this.symbolFactory = new DefaultSymbolFactory();
     }
+
+    
 :};
 
 
@@ -44,8 +48,8 @@ scan with {: return lexer.next_token(); :};
 
 // Terminales
 terminal MAIN, FIN_EXPRESION;
-terminal IF, ELSE, ELIF, WHILE, DO_WHILE, FOR, BREAK, RETURN;
-terminal BOOL, CHAR, FLOAT, INT, STRING, TRUE, FALSE;
+terminal IF, ELSE, ELIF, WHILE, DO, FOR, BREAK, RETURN;
+terminal BOOL, CHAR, FLOAT, INT, STRING;
 
 // Comentarios
 terminal COMENTARIO;
@@ -59,8 +63,9 @@ terminal NEGACION, CONJUNCION, DISYUNCION, MINUSMINUS, PLUSPLUS, GREATER_THAN, L
 terminal GREATER_THAN_OR_EQ, LESS_THAN_OR_EQ;
 
 // Parentesis
-terminal PARENTESISABRE, PARENTESISCIERRA, LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, SEMI, COMA;
-terminal LLAVESCUADABRE, LLAVESCUADCIERRA;
+terminal PARENTESISABRE, PARENTESISCIERRA, LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, COMA;
+terminal LLAVESCUADABRE, LLAVESCUADCIERRA, SEMI;
+
 // Literales
 terminal java.lang.Number L_ENTERO;
 terminal java.lang.Number L_FLOTANTE;
@@ -77,15 +82,15 @@ terminal java.lang.String Identificador;
 non terminal inicio, programa, bloqueCod, return, bloqueControl;
 
 // Funciones
-non terminal crearFuncion, funcion, parametro, tipoParametro;
+non terminal crearFuncion, funcion, parametro, crearParametro;
 
 // Sentencias
 non terminal sentencia, crearVariable, crearAsignarVariable, asignarVariable;
-non terminal asignarElementoArreglo, obtenerDatoArreglo;//, obtenerDatoString, asignarElementoString;
+//, obtenerDatoString, asignarElementoString;
 non terminal entradaEst, salidaEst;
 
 // Estructuras de control
-non terminal estrucControl, if, elif, else, while, condicion, break;
+non terminal estructControl, if, elif, else, while, do, for, condicion, break;
 
 // Expresiones
 non terminal expresion, operando;
@@ -94,73 +99,58 @@ non terminal operadorNegacion, operadorBinario, operadorRelacional, operadorUnar
 
 // Tipos
 non terminal literal;
-non terminal arreglo, crearArreglo;//, elementoArreglo;
-non terminal tipoVariable, tipoFuncion, tipoArreglo;
+non terminal arreglo, tipoArreglo, elementoArreglo, asignarElementoArreglo, obtenerDatoArreglo;
+non terminal tipoVariable, tipoFuncion;
+
 
 
 /* Precedencia */
 precedence left PLUS, MINUS;
-precedence left TIMES;
-precedence left EQEQ;
+precedence left EQEQ, NOT_EQ;
+precedence left GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQ, LESS_THAN_OR_EQ;
+precedence left TIMES, DIVI, MODULO;
+precedence left POWER;
+precedence left CONJUNCION;
+precedence left DISYUNCION;
+precedence left IF, ELIF, ELSE;
+precedence left LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, PARENTESISABRE, PARENTESISCIERRA; 
 
 start with inicio;
 
 /*Programa Principal*/
 inicio ::= programa;
-programa ::= tipoFuncion MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA;
+programa ::= tipoFuncion MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+           | crearFuncion programa
+;
 
+// Produccion de bloque de codigo
 bloqueCod ::= sentencia 
-            | estrucControl 
+            | estructControl 
             | return 
             | sentencia bloqueCod
-            | estrucControl bloqueCod
+            | estructControl bloqueCod
+            | COMENTARIO
 ;
 
-// Estructuras de control
-estrucControl ::= if 
-                | elif 
-                | else 
-;
-
-if	::= IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
-          | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA elif
-          | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA else
-;
-
-elif ::= if ELIF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA;
-
-else ::= if ELSE bloqueControl;
-
-bloqueControl ::= bloqueCod 
-                | break
-;
-
-break ::= BREAK;
-
-return ::= RETURN literal FIN_EXPRESION
-         | RETURN expresion FIN_EXPRESION
-         | RETURN Identificador FIN_EXPRESION
-         | RETURN crearFuncion FIN_EXPRESION
-;
-
+// Produccion de sentencias
 sentencia ::= crearVariable FIN_EXPRESION 
             | crearAsignarVariable FIN_EXPRESION
             | asignarVariable FIN_EXPRESION
-            | crearArreglo FIN_EXPRESION
             | asignarElementoArreglo FIN_EXPRESION
             | obtenerDatoArreglo FIN_EXPRESION
             | expresion FIN_EXPRESION
-            //| asignarElementoString FIN_EXPRESION
+            | funcion FIN_EXPRESION
             | entradaEst FIN_EXPRESION
             | salidaEst FIN_EXPRESION
 ;
 
+// Produccion de creacion y asignacion de variables
 crearVariable ::= tipoVariable Identificador;
 
 crearAsignarVariable ::= crearVariable EQ literal 
                        | crearVariable EQ expresion 
                        | crearVariable EQ Identificador 
-                       | crearVariable EQ crearFuncion 
+                       | crearVariable EQ funcion
 ;
 asignarVariable	::= Identificador EQ literal 
                   | Identificador EQ expresion 
@@ -168,40 +158,114 @@ asignarVariable	::= Identificador EQ literal
                   | Identificador EQ funcion 
 ;
 
-arreglo ::= LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA;
-crearArreglo ::= tipoArreglo Identificador arreglo;
-asignarElementoArreglo	::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA EQ L_ENTERO 
-                          | Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA EQ  L_CHAR
+// Produccion de arreglos  **crear Arreglo?
+arreglo ::= tipoArreglo LLAVESCUADABRE LLAVESCUADCIERRA;
+
+asignarElementoArreglo	::= elementoArreglo  EQ L_ENTERO 
+                          | elementoArreglo  EQ  L_CHAR
 ;
 // preguntar
-/*elementoArreglo	::= L_CHAR
-                  | L_ENTERO
-                  | L_CHAR COMA elementoArreglo
-                  | L_ENTERO COMA elementoArreglo
-;*/
+elementoArreglo	::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA
+                  | Identificador LLAVESCUADABRE Identificador LLAVESCUADCIERRA
+;
 obtenerDatoArreglo ::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA
                      | Identificador LLAVESCUADABRE Identificador LLAVESCUADCIERRA
 ;
 
+// Produccion de expresiones
+expresion ::= expresionBinaria 
+            | expresionUnaria 
+            | expresionRelacion 
+            | expresionNegacion 
+            | expresionConjuntiva
+;
 
-//asignarElementoString ::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA EQ L_CHAR;
+// Produccion de creacion de funciones
+funcion	::= Identificador PARENTESISABRE PARENTESISCIERRA 
+          | Identificador PARENTESISABRE parametro PARENTESISCIERRA 
+;
 
-//obtenerDatoString ::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA;
+crearFuncion ::= tipoFuncion Identificador PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+                | tipoFuncion Identificador PARENTESISABRE Identificador PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+                | tipoFuncion Identificador PARENTESISABRE literal  PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+                | tipoFuncion Identificador PARENTESISABRE crearParametro  PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+; 
 
+// Produccion de creacion de parametros
+parametro ::= Identificador
+            | literal
+            | funcion
+            | Identificador COMA parametro
+;
+
+crearParametro ::= tipoVariable Identificador
+                 | tipoVariable Identificador COMA crearParametro
+;
+
+// Produccion de funcion de entrada estandar
 entradaEst ::= SYS_READ PARENTESISABRE L_ENTERO PARENTESISCIERRA
              | SYS_READ PARENTESISABRE L_FLOTANTE PARENTESISCIERRA
 ;
 
+// Produccion de funcion de salida estandar
 salidaEst ::= SYS_PRINT PARENTESISABRE Identificador PARENTESISCIERRA
             | SYS_PRINT PARENTESISABRE literal PARENTESISCIERRA
 ;
 
+// Produccion de estructuras de control
+estructControl ::= if 
+                | elif 
+                | else 
+                | while
+                | do
+                | for
+;
 
+// Produccion de IF
+if	::= IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+      | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA elif
+      | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA else
+;
+
+// Produccion de ELIF
+elif ::= if ELIF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA;
+
+// Produccion de ELSE
+else ::= if ELSE LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA;
+
+// Produccion de WHILE
+while ::= WHILE PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA;
+
+// Produccion de DO
+do ::= DO LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA WHILE PARENTESISABRE condicion PARENTESISCIERRA;
+
+// Produccion de bloque de control
+bloqueControl ::= bloqueCod 
+                | break
+;
+
+for ::= FOR PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+      | FOR PARENTESISABRE L_BOOLEANO PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+      | FOR PARENTESISABRE expresionConjuntiva PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+;
+
+// Produccion de BREAK
+break ::= BREAK FIN_EXPRESION;
+
+// Produccion de RETURN
+return ::= RETURN literal FIN_EXPRESION
+         | RETURN expresion FIN_EXPRESION
+         | RETURN Identificador FIN_EXPRESION
+         | RETURN funcion FIN_EXPRESION
+;
+
+// Produccion de condicion
 condicion ::= L_BOOLEANO 
             | expresionRelacion 
             | expresionNegacion
 ;
 
+// Produccion de expresiones relaciones
 expresionRelacion ::= operando operadorRelacional operando
                     | operando operadorComparacion operando
 ;
@@ -214,76 +278,66 @@ operadorComparacion	::= EQEQ
                       | NOT_EQ
 ;
 
-// Tipos
-tipoVariable ::=  INT 
-                | BOOL 
-                | FLOAT 
-                | CHAR 
-                | STRING 
-;
-
-tipoFuncion ::=  INT 
-                | BOOL 
-                | FLOAT 
-;
-
-tipoParametro ::= INT 
-                | BOOL 
-                | FLOAT 
-                | CHAR 
-                | STRING 
-                //puedo recibir Identificador?
-;
-
-tipoArreglo ::= INT
-              | CHAR
-;
-
-literal ::= INT
-            |FLOAT
-            |STRING
-            |CHAR
-;
-
-//Expresiones
+// Produccion de expresiones de negacion
 expresionNegacion ::= operadorNegacion operando;
+
 operadorNegacion ::= NEGACION;
 
+// Produccion de expresiones unarias
 expresionUnaria	::= operando operadorUnario
                   | MINUS operando
 ;
+
 operadorUnario	::= MINUSMINUS
                   | PLUSPLUS
 ;
-expresionBinaria ::= operando operadorBinario operando;
 
+// Produccion de expresiones Binarias
+expresionBinaria ::= operando operadorBinario operando;
+operadorBinario ::= PLUS
+                  | MINUS
+                  | DIVI
+                  | TIMES
+                  | POWER
+                  | MODULO
+;
+
+// Produccion de expresiones Conjuntivas
 expresionConjuntiva	::= operando operadorConjuntiva operando;
 operadorConjuntiva	::= CONJUNCION
                       | DISYUNCION
 ;
 operando ::= literal 
            | Identificador 
-           | crearFuncion
+           | funcion
 ;
 
-
-expresion ::= expresionBinaria 
-            | expresionUnaria 
-            | expresionRelacion 
-            | expresionNegacion 
-            | expresionConjuntiva
+// Produccion de los tipos de funcion
+tipoFuncion ::=  INT 
+               | BOOL 
+               | FLOAT 
 ;
 
-//Funcion
-funcion	::= Identificador PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-          | Identificador PARENTESISABRE parametro PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-;  // agregar que tenga mas de un parametro
-parametro ::= tipoParametro Identificador;
+// Produccion de los tipos de variables
+tipoVariable ::= INT 
+               | BOOL 
+               | FLOAT
+               | CHAR 
+               | STRING 
+               | arreglo
+;
 
+// Produccion de los tipos de arreglo
+tipoArreglo ::= INT
+              | CHAR
+;
 
-crearFuncion ::= tipoFuncion Identificador PARENTESISABRE PARENTESISCIERRA 
-                | tipoFuncion Identificador PARENTESISABRE Identificador PARENTESISCIERRA
-                | tipoFuncion Identificador literal  PARENTESISCIERRA
-; // agregar que tenga mas de un parametro
+// Produccion de los literales
+literal ::= L_ENTERO
+          | L_FLOTANTE
+          | L_BOOLEANO
+          | L_CHAR
+          | STRING_LITERAL
+;
 
 

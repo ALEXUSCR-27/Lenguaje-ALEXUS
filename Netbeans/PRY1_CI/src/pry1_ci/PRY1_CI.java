@@ -52,7 +52,7 @@ public class PRY1_CI {
         Files.move(Paths.get(raiz+"\\sym.java"), Paths.get(raiz+"\\src\\pry1_ci\\sym.java"));
         Files.move(Paths.get(raiz+"\\parser.java"), Paths.get(raiz+"\\src\\pry1_ci\\parser.java"));
         probarLexer();
-       //probarParser();
+       probarParser();
     }
     
     /**
@@ -121,13 +121,20 @@ public class PRY1_CI {
         
     }
     
-    /*private static void probarParser() throws FileNotFoundException, IOException, Exception {
+    private static void probarParser() throws FileNotFoundException, IOException, Exception {
         String rutaEJ1 = "T:\\2023\\COMPILADORES\\PRYS\\PRY1_CI\\Netbeans\\PRY1_CI\\src\\pry1_ci\\ej.txt";
         Reader reader = new BufferedReader(new FileReader (rutaEJ1));
       
         LexerAC lexer = new LexerAC(reader);
         parser p = new parser(lexer);
-        p.parse();
-    }*/
+       // p.parse();
+        try {
+                Object result = p.parse().value;
+                System.out.println("El archivo se puede compilar.");
+            }
+            catch (Exception e) {
+                System.out.println("El archivo no se puede compilar.");
+            }
+    }
     
 }

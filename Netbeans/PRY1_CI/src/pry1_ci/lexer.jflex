@@ -83,8 +83,7 @@ FlotanteN = - ({FlotanteC}|{FlotanteP})
 <YYINITIAL> "string" {return symbol(sym.STRING);}
 <YYINITIAL> "char" {return symbol(sym.CHAR);}
 
-<YYINITIAL> "true" {return symbol(sym.TRUE);}
-<YYINITIAL> "false" {return symbol(sym.FALSE);}
+
 <YYINITIAL> "@" {return symbol(sym.COMENTARIO);}
 
 
@@ -93,7 +92,7 @@ FlotanteN = - ({FlotanteC}|{FlotanteP})
 <YYINITIAL> "elif" {return symbol(sym.ELIF);}
 <YYINITIAL> "else" {return symbol(sym.ELSE);}
 <YYINITIAL> "while" {return symbol(sym.WHILE);}
-<YYINITIAL> "do" {return symbol(sym.DO_WHILE);} 
+<YYINITIAL> "do" {return symbol(sym.DO);} 
 <YYINITIAL> "for" {return symbol(sym.FOR);}
 <YYINITIAL> "break" {return symbol(sym.BREAK);}
 <YYINITIAL> "return" {return symbol(sym.RETURN);}
@@ -101,6 +100,7 @@ FlotanteN = - ({FlotanteC}|{FlotanteP})
 
 <YYINITIAL> "sysPrint" {return symbol(sym.SYS_PRINT);}
 <YYINITIAL> "sysRead" {return symbol(sym.SYS_READ);}
+<YYINITIAL> "main" {return symbol(sym.MAIN);}
 
 	
 <YYINITIAL> {
