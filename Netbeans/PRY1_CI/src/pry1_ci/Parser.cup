@@ -26,23 +26,34 @@ action code {:
 
 
 parser code  {: 
-    LexerAC lexer;
     
-    @SuppressWarnings("deprecation")
-    public void Parser(LexerAC lexer) {
-        this.lexer = lexer;
-        this.symbolFactory = new DefaultSymbolFactory();
-    }
+    public void report_error(String message, Object info) {
+    StringBuilder m = new StringBuilder(message + ": ");
 
+    if (info instanceof java_cup.runtime.Symbol) 
+      m.append( info.toString() );
     
+    System.out.println(m);
+
+
+
+  }
+/*public void syntax_error(Symbol s) {
+    String lexema = s.value.toString();
+    int linea = s.right();
+    int columna = s.left();
+    
+    System.out.println("[ERROR SINTACTICO] = Lexema: "+" Fila: "+linea+" Columna: "+columna);
+
+  }*/  
 :};
 
 
 
 
 
-init with {: :};
-scan with {: return lexer.next_token(); :};
+// init with {: :};
+//scan with {: return lexer.next_token(); :};
 
 
 
@@ -119,7 +130,7 @@ start with inicio;
 
 /*Programa Principal*/
 inicio ::= programa;
-programa ::= tipoFuncion MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+programa ::= INT MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA {:System.out.println("Main");:}
            | crearFuncion programa
 ;
 
@@ -145,7 +156,7 @@ sentencia ::= crearVariable FIN_EXPRESION
 ;
 
 // Produccion de creacion y asignacion de variables
-crearVariable ::= tipoVariable Identificador;
+crearVariable ::= tipoVariable:tVar Identificador {:System.out.println("Tipo variable: "+tVar);:};
 
 crearAsignarVariable ::= crearVariable EQ literal 
                        | crearVariable EQ expresion 
@@ -253,8 +264,8 @@ for ::= FOR PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueC
 break ::= BREAK FIN_EXPRESION;
 
 // Produccion de RETURN
-return ::= RETURN literal FIN_EXPRESION
-         | RETURN expresion FIN_EXPRESION
+return ::= RETURN literal:iDL FIN_EXPRESION {:System.out.println(iDL);:}
+         | RETURN expresion:e FIN_EXPRESION {:System.out.println(e);:}
          | RETURN Identificador FIN_EXPRESION
          | RETURN funcion FIN_EXPRESION
 ;

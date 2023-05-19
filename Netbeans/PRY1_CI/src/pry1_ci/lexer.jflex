@@ -3,7 +3,7 @@ import java_cup.runtime.*;
 
 %%
 
-%class LexerAC
+%class LexerAS
 %public
 %unicode
 %cup
@@ -66,6 +66,8 @@ Flotante = {FlotanteC} | {FlotanteP} | {FlotanteN}
 FlotanteC = 0 \. [0-9]+
 FlotanteP = {EnteroP} \. [0-9]+
 FlotanteN = - ({FlotanteC}|{FlotanteP})
+
+Boolean = T | F
 
 %state CADENA, CHAR
 
@@ -143,8 +145,7 @@ FlotanteN = - ({FlotanteC}|{FlotanteP})
 	{Flotante}	{return symbol(sym.L_FLOTANTE, Float.valueOf(yytext()));}
 	
 	// Booleanos
-	"true"		{return symbol(sym.L_BOOLEANO, true);}
-	"false"		{return symbol(sym.L_BOOLEANO, false);}
+	{Boolean} {return symbol(sym.L_BOOLEANO);}
     
     //Entrada y salida estandar
 	"sys_read"	{return symbol(sym.SYS_READ);}

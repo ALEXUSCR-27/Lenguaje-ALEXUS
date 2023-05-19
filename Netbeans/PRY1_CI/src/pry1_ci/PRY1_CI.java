@@ -45,14 +45,15 @@ public class PRY1_CI {
         
         Files.deleteIfExists(Paths.get(raiz+"\\src/pry1_ci\\sym.java"));
         Files.deleteIfExists(Paths.get(raiz+"\\src/pry1_ci\\Parser.java"));
-        Files.deleteIfExists(Paths.get(raiz+"\\src/pry1_ci\\LexerAC.java"));
+        Files.deleteIfExists(Paths.get(raiz+"\\src/pry1_ci\\LexerAS.java"));
         Files.deleteIfExists(Paths.get(raiz+"\\src/pry1_ci\\analisis.txt"));
         Generar(rutaLexer, rutaParser);
         
         Files.move(Paths.get(raiz+"\\sym.java"), Paths.get(raiz+"\\src\\pry1_ci\\sym.java"));
         Files.move(Paths.get(raiz+"\\parser.java"), Paths.get(raiz+"\\src\\pry1_ci\\parser.java"));
-        probarLexer();
-       probarParser();
+        //probarLexer();
+        probarParser();
+       
     }
     
     /**
@@ -80,10 +81,10 @@ public class PRY1_CI {
      * @throws java.io.IOException
     */
     private static void probarLexer() throws FileNotFoundException, IOException {
-        String rutaEJ1 = "src/pry1_ci/ej.txt";
+        String rutaEJ1 = "src/pry1_ci/ej2.txt";
         Reader reader = new BufferedReader(new FileReader (rutaEJ1));
         reader.read();
-        LexerAC lexer = new LexerAC(reader);
+        LexerAS lexer = new LexerAS(reader);
         int i = 0;
         
         Symbol token;
@@ -122,19 +123,16 @@ public class PRY1_CI {
     }
     
     private static void probarParser() throws FileNotFoundException, IOException, Exception {
-        String rutaEJ1 = "T:\\2023\\COMPILADORES\\PRYS\\PRY1_CI\\Netbeans\\PRY1_CI\\src\\pry1_ci\\ej.txt";
+        String rutaEJ1 = "src/pry1_ci/ej.txt";
         Reader reader = new BufferedReader(new FileReader (rutaEJ1));
-      
-        LexerAC lexer = new LexerAC(reader);
+        reader.read();
+        LexerAS lexer = new LexerAS(new FileReader (rutaEJ1));
         parser p = new parser(lexer);
-       // p.parse();
-        try {
-                Object result = p.parse().value;
-                System.out.println("El archivo se puede compilar.");
-            }
-            catch (Exception e) {
-                System.out.println("El archivo no se puede compilar.");
-            }
+        Object result = p.parse();
+      
+                //Object result = p.parse().value;
+                //System.out.println("El archivo se puede compilar.");
+           
     }
     
 }
