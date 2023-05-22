@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 
-/*
+
 action code {:
     HashMap<String, ArrayList<String>> listaTablasSimbolos = new HashMap<String, ArrayList<String>>();
     String tablaActual;
@@ -22,19 +22,18 @@ action code {:
         }
     }
 :}
-*/
+
 
 
 parser code  {: 
-    
-    public void report_error(String message, Object info) {
-    StringBuilder m = new StringBuilder(message + ": ");
-
-    if (info instanceof java_cup.runtime.Symbol) 
-      m.append( info.toString() );
-    
-    System.out.println(m);
-
+/* 
+    public void syntax_error(Symbol s) {
+        System.err.println("[Error recuperado en la linea: "+s.left+"]");
+    }
+*/
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
+        System.err.println("[Error irrecuperable: "+s.left+"]");
+    }
 
 
   }
@@ -130,7 +129,7 @@ start with inicio;
 
 /*Programa Principal*/
 inicio ::= programa;
-programa ::= INT MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA {:System.out.println("Main");:}
+programa ::= INT MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
            | crearFuncion programa
 ;
 
@@ -151,17 +150,24 @@ sentencia ::= crearVariable FIN_EXPRESION
             | obtenerDatoArreglo FIN_EXPRESION
             | expresion FIN_EXPRESION
             | funcion FIN_EXPRESION
-            | entradaEst FIN_EXPRESION
+            | entradaEst:vET FIN_EXPRESION
             | salidaEst FIN_EXPRESION
+            | error sentencia
 ;
 
 // Produccion de creacion y asignacion de variables
-crearVariable ::= tipoVariable:tVar Identificador {:System.out.println("Tipo variable: "+tVar);:};
+crearVariable ::= tipoVariable:vTVar Identificador:vIDEN 
+                   {:
+                        System.out.println("[PARSER] TIPO: "+vTVar+" IDEN: "+vIDEN);
+                        //listaTablasSimbolos.get(currentHash).add(vIDEN.toString()+":"+vTVAR.toString());
+                    :}
+;
 
-crearAsignarVariable ::= crearVariable EQ literal 
+crearAsignarVariable ::= crearVariable EQ literal
                        | crearVariable EQ expresion 
                        | crearVariable EQ Identificador 
                        | crearVariable EQ funcion
+                       | crearVariable FIN_EXPRESION
 ;
 asignarVariable	::= Identificador EQ literal 
                   | Identificador EQ expresion 
@@ -192,11 +198,11 @@ expresion ::= expresionBinaria
 ;
 
 // Produccion de creacion de funciones
-funcion	::= Identificador PARENTESISABRE PARENTESISCIERRA 
+funcion	::= Identificador:vID PARENTESISABRE PARENTESISCIERRA {: System.out.println("[PARSER] Funcion : "+vID); :}
           | Identificador PARENTESISABRE parametro PARENTESISCIERRA 
 ;
 
-crearFuncion ::= tipoFuncion Identificador PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+crearFuncion ::= tipoFuncion: vTFuncion Identificador PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
                 | tipoFuncion Identificador PARENTESISABRE Identificador PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
                 | tipoFuncion Identificador PARENTESISABRE literal  PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
                 | tipoFuncion Identificador PARENTESISABRE crearParametro  PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
@@ -219,8 +225,8 @@ entradaEst ::= SYS_READ PARENTESISABRE L_ENTERO PARENTESISCIERRA
 ;
 
 // Produccion de funcion de salida estandar
-salidaEst ::= SYS_PRINT PARENTESISABRE Identificador PARENTESISCIERRA
-            | SYS_PRINT PARENTESISABRE literal PARENTESISCIERRA
+salidaEst ::= SYS_PRINT PARENTESISABRE Identificador:vID PARENTESISCIERRA {: System.out.println("[PARSER] SysPrint Identificador: " +vID); :}
+            | SYS_PRINT PARENTESISABRE literal:vL PARENTESISCIERRA {: System.out.println("[PARSER] SysPrint: " +vL); :}
 ;
 
 // Produccion de estructuras de control
@@ -264,8 +270,8 @@ for ::= FOR PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueC
 break ::= BREAK FIN_EXPRESION;
 
 // Produccion de RETURN
-return ::= RETURN literal:iDL FIN_EXPRESION {:System.out.println(iDL);:}
-         | RETURN expresion:e FIN_EXPRESION {:System.out.println(e);:}
+return ::= RETURN literal:iDL FIN_EXPRESION {: System.out.println("[PASER] RETURN: "+iDL); :}
+         | RETURN expresion:e FIN_EXPRESION
          | RETURN Identificador FIN_EXPRESION
          | RETURN funcion FIN_EXPRESION
 ;
@@ -330,12 +336,12 @@ tipoFuncion ::=  INT
 ;
 
 // Produccion de los tipos de variables
-tipoVariable ::= INT 
-               | BOOL 
-               | FLOAT
-               | CHAR 
-               | STRING 
-               | arreglo
+tipoVariable ::= INT {: RESULT = "int"; :} 
+               | BOOL {: RESULT = "bool"; :} 
+               | FLOAT {: RESULT = "float"; :} 
+               | CHAR {: RESULT = "char"; :} 
+               | STRING:s {: RESULT = "string"; :} 
+               | arreglo {: RESULT = "[]"; :} 
 ;
 
 // Produccion de los tipos de arreglo
@@ -344,11 +350,11 @@ tipoArreglo ::= INT
 ;
 
 // Produccion de los literales
-literal ::= L_ENTERO
-          | L_FLOTANTE
-          | L_BOOLEANO
-          | L_CHAR
-          | STRING_LITERAL
+literal ::= L_ENTERO:l_E {: RESULT = l_E; :}
+          | L_FLOTANTE:l_F {: RESULT = l_F; :}
+          | L_BOOLEANO:l_B {: RESULT = l_B; :}
+          | L_CHAR:l_C {: RESULT = l_C; :}
+          | STRING_LITERAL:l_S {: RESULT = l_S; :}
 ;
 
 

@@ -1,4 +1,10 @@
- int main(){ 
-  
-    return 0$
+int main(){
+     
+	string str1 = "Mi string 1"$
+        string str1 = "Mi string 1"$
+        float adios = 0.1;
+        mifun()$
+        sysPrint(str1)$
+        sysPrint("Hola mundo")$
+	return 0$
 }

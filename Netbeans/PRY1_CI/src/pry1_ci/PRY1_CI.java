@@ -127,8 +127,12 @@ public class PRY1_CI {
         Reader reader = new BufferedReader(new FileReader (rutaEJ1));
         reader.read();
         LexerAS lexer = new LexerAS(new FileReader (rutaEJ1));
+        try {
         parser p = new parser(lexer);
         Object result = p.parse();
+        }catch (Exception e) {
+                System.err.println("Error durante el análisis sintáctico: " + e.getMessage());
+        }
       
                 //Object result = p.parse().value;
                 //System.out.println("El archivo se puede compilar.");
