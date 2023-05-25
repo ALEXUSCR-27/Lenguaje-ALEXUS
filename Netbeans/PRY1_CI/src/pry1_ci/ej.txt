@@ -1,10 +1,18 @@
+
 int main(){
-     
-	string str1 = "Mi string 1"$
-        string str1 = "Mi string 1"$
-        float adios = 0.1;
-        mifun()$
-        sysPrint(str1)$
-        sysPrint("Hola mundo")$
-	return 0$
+    int x = 10$
+    string msg = "hola"$
+    acceso()$
+
+	
 }
+
+int imprimirMsg(int as, int df) {
+    sysPrint("Hola Mundo")$
+    sysPrint("Muy bonito ser TEC")$
+    string msg = "Adios"$
+    int x = 10$
+    int y = 12$
+}
+
+float s() {return 0$}

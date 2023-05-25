@@ -5,16 +5,21 @@ import java_cup.runtime.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
-
+/* Errores
+    creacion y asignacion variables de tipo flotante
+    problemas en la declaracion de operaciones
+    retornar identificador
+*/
 
 action code {:
     HashMap<String, ArrayList<String>> listaTablasSimbolos = new HashMap<String, ArrayList<String>>();
     String tablaActual;
 
     public void imprimirTabla() {
+        System.out.println("[IMPRIMIENDO TABLA DE SIMBOLOS]\n");
         for (String key: listaTablasSimbolos.keySet()) {
-            System.out.println("Tabla de simbolo: "+ key);
-            System.out.println("Valores: ");
+            System.out.println("Tabla de simbolos Funcion:"+ key);
+            System.out.println("Valores del bloque de funcion ");
             for (String item : listaTablasSimbolos.get(key)) {
                 System.out.println(item);
             }
@@ -26,17 +31,31 @@ action code {:
 
 
 parser code  {: 
-/* 
-    public void syntax_error(Symbol s) {
-        System.err.println("[Error recuperado en la linea: "+s.left+"]");
+    public void report_error(String message, Object info) {
+        String m = "Error ";
+        if (info instanceof java_cup.runtime.Symbol) {
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+            if (s.left >= 0) {
+                m+="en la linea "+(s.left+1)+" -> ";
+            }
+        }
+        m+=message;
+        System.err.println(m);
     }
-*/
-    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
-        System.err.println("[Error irrecuperable: "+s.left+"]");
+
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        
+    }
+
+    private int lineNumber = 1;
+
+    private void incrementLineNumber() {
+        lineNumber++;
     }
 
 
-  }
+  
 /*public void syntax_error(Symbol s) {
     String lexema = s.value.toString();
     int linea = s.right();
@@ -89,10 +108,10 @@ terminal java.lang.String Identificador;
 // No terminales
 
 // Estructura del programa
-non terminal inicio, programa, bloqueCod, return, bloqueControl;
+non terminal inicio, main, programa, bloqueCod, return, bloqueControl;
 
 // Funciones
-non terminal crearFuncion, funcion, parametro, crearParametro;
+non terminal crearFuncion, funcion, funciones, parametro, crearParametro, tipoIDFun;
 
 // Sentencias
 non terminal sentencia, crearVariable, crearAsignarVariable, asignarVariable;
@@ -128,9 +147,17 @@ precedence left LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, PARENTESISABRE, PARENT
 start with inicio;
 
 /*Programa Principal*/
-inicio ::= programa;
-programa ::= INT MAIN PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-           | crearFuncion programa
+inicio ::= programa {:imprimirTabla();:};
+programa ::= main funciones
+           
+;
+
+funciones ::= funciones crearFuncion
+            | crearFuncion 
+;
+
+main ::= tipoIDFun PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+{: System.out.println("Cierra tabla de simbolos\n"); :}
 ;
 
 // Produccion de bloque de codigo
@@ -152,14 +179,15 @@ sentencia ::= crearVariable FIN_EXPRESION
             | funcion FIN_EXPRESION
             | entradaEst:vET FIN_EXPRESION
             | salidaEst FIN_EXPRESION
-            | error sentencia
+           //| error {:System.err.println("Error Sintactico recuperado");:}sentencia
+
 ;
 
 // Produccion de creacion y asignacion de variables
-crearVariable ::= tipoVariable:vTVar Identificador:vIDEN 
+crearVariable ::= tipoVariable:vTV Identificador:vID 
                    {:
-                        System.out.println("[PARSER] TIPO: "+vTVar+" IDEN: "+vIDEN);
-                        //listaTablasSimbolos.get(currentHash).add(vIDEN.toString()+":"+vTVAR.toString());
+                        System.out.println("[PARSER] Funcion TIPO: "+vTV+" ID: "+vID);
+                        listaTablasSimbolos.get(tablaActual).add(vID.toString()+":"+vTV.toString());
                     :}
 ;
 
@@ -167,7 +195,7 @@ crearAsignarVariable ::= crearVariable EQ literal
                        | crearVariable EQ expresion 
                        | crearVariable EQ Identificador 
                        | crearVariable EQ funcion
-                       | crearVariable FIN_EXPRESION
+                      | crearVariable FIN_EXPRESION
 ;
 asignarVariable	::= Identificador EQ literal 
                   | Identificador EQ expresion 
@@ -198,15 +226,35 @@ expresion ::= expresionBinaria
 ;
 
 // Produccion de creacion de funciones
-funcion	::= Identificador:vID PARENTESISABRE PARENTESISCIERRA {: System.out.println("[PARSER] Funcion : "+vID); :}
+funcion	::= Identificador:vID PARENTESISABRE PARENTESISCIERRA {: System.out.println("[PARSER] Funcion ID:"+vID); :}
           | Identificador PARENTESISABRE parametro PARENTESISCIERRA 
 ;
 
-crearFuncion ::= tipoFuncion: vTFuncion Identificador PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-                | tipoFuncion Identificador PARENTESISABRE Identificador PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-                | tipoFuncion Identificador PARENTESISABRE literal  PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-                | tipoFuncion Identificador PARENTESISABRE crearParametro  PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
-; 
+crearFuncion ::= tipoIDFun PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA 
+{: System.out.println("Cierra tabla de simbolos\n"); :}
+               | tipoIDFun PARENTESISABRE Identificador PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA 
+{: System.out.println("Cierra tabla de simbolos\n"); :}
+               | tipoIDFun PARENTESISABRE literal  PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+{: System.out.println("Cierra tabla de simbolos\n"); :}
+               | tipoIDFun PARENTESISABRE crearParametro  PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA
+{: System.out.println("Cierra tabla de simbolos\n"); :}
+;
+
+tipoIDFun ::= tipoFuncion:vTF Identificador:vID 
+{:
+    System.out.println("Nueva tabla de simbolos Funcion:"+vID);
+    String tipoTabla = "";
+    if (vID.toString() == "main") tipoTabla = "Funcion main Tipo:"+vTF.toString();
+    else {tipoTabla = "Funcion Tipo:"+vTF.toString();}
+    ArrayList<String> funciones = new ArrayList<String>();
+    tablaActual = vID.toString();
+    funciones.add(tipoTabla);
+    listaTablasSimbolos.put(tablaActual, funciones);
+    
+    
+:}
+;
+ 
 
 // Produccion de creacion de parametros
 parametro ::= Identificador
@@ -271,7 +319,7 @@ break ::= BREAK FIN_EXPRESION;
 
 // Produccion de RETURN
 return ::= RETURN literal:iDL FIN_EXPRESION {: System.out.println("[PASER] RETURN: "+iDL); :}
-         | RETURN expresion:e FIN_EXPRESION
+         | RETURN expresion FIN_EXPRESION
          | RETURN Identificador FIN_EXPRESION
          | RETURN funcion FIN_EXPRESION
 ;
@@ -324,15 +372,15 @@ expresionConjuntiva	::= operando operadorConjuntiva operando;
 operadorConjuntiva	::= CONJUNCION
                       | DISYUNCION
 ;
-operando ::= literal 
-           | Identificador 
+operando ::= literal:vL {: RESULT = vL; :} 
+           | Identificador:vI {: RESULT = vI; :} 
            | funcion
 ;
 
 // Produccion de los tipos de funcion
-tipoFuncion ::=  INT 
-               | BOOL 
-               | FLOAT 
+tipoFuncion ::=  INT {: RESULT = "int"; :}
+               | BOOL {: RESULT = "bool"; :}
+               | FLOAT {: RESULT = "float"; :}
 ;
 
 // Produccion de los tipos de variables

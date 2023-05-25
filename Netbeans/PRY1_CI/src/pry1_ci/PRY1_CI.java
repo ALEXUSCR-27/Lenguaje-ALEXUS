@@ -131,7 +131,7 @@ public class PRY1_CI {
         parser p = new parser(lexer);
         Object result = p.parse();
         }catch (Exception e) {
-                System.err.println("Error durante el análisis sintáctico: " + e.getMessage());
+                System.err.println("Error al intentar realizar analisis: " + e.getMessage());
         }
       
                 //Object result = p.parse().value;

@@ -102,7 +102,7 @@ Boolean = T | F
 
 <YYINITIAL> "sysPrint" {return symbol(sym.SYS_PRINT);}
 <YYINITIAL> "sysRead" {return symbol(sym.SYS_READ);}
-<YYINITIAL> "main" {return symbol(sym.MAIN);}
+//<YYINITIAL> "main" {return symbol(sym.MAIN);}
 
 	
 <YYINITIAL> {
@@ -147,9 +147,6 @@ Boolean = T | F
 	// Booleanos
 	{Boolean} {return symbol(sym.L_BOOLEANO);}
     
-    //Entrada y salida estandar
-	"sys_read"	{return symbol(sym.SYS_READ);}
-	"sys_print"  {return symbol(sym.SYS_PRINT);}
 
     \'			{yybegin(CHAR);}
     // Strings 
