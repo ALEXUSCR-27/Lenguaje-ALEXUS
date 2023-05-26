@@ -128,7 +128,7 @@ non terminal operadorNegacion, operadorBinario, operadorRelacional, operadorUnar
 
 // Tipos
 non terminal literal;
-non terminal arreglo, tipoArreglo, elementoArreglo, asignarElementoArreglo, obtenerDatoArreglo;
+non terminal arreglo, tipoArreglo, elementoArreglo, crearArreglo, asignarElementoArreglo, obtenerDatoArreglo;
 non terminal tipoVariable, tipoFuncion;
 
 
@@ -173,6 +173,7 @@ bloqueCod ::= sentencia
 sentencia ::= crearVariable FIN_EXPRESION 
             | crearAsignarVariable FIN_EXPRESION
             | asignarVariable FIN_EXPRESION
+            //| crearArreglo FIN_EXPRESION
             | asignarElementoArreglo FIN_EXPRESION
             | obtenerDatoArreglo FIN_EXPRESION
             | expresion FIN_EXPRESION
@@ -188,14 +189,18 @@ crearVariable ::= tipoVariable:vTV Identificador:vID
                    {:
                         System.out.println("[PARSER] Funcion TIPO: "+vTV+" ID: "+vID);
                         listaTablasSimbolos.get(tablaActual).add(vID.toString()+":"+vTV.toString());
+                        RESULT = vID;
                     :}
 ;
 
-crearAsignarVariable ::= crearVariable EQ literal
+crearAsignarVariable ::= crearVariable:vID EQ literal 
+{: int x = listaTablasSimbolos.get(tablaActual).indexOf(vID);
+    System.out.println(x);
+ :}
                        | crearVariable EQ expresion 
                        | crearVariable EQ Identificador 
                        | crearVariable EQ funcion
-                      | crearVariable FIN_EXPRESION
+                       | crearVariable FIN_EXPRESION
 ;
 asignarVariable	::= Identificador EQ literal 
                   | Identificador EQ expresion 
@@ -205,6 +210,10 @@ asignarVariable	::= Identificador EQ literal
 
 // Produccion de arreglos  **crear Arreglo?
 arreglo ::= tipoArreglo LLAVESCUADABRE LLAVESCUADCIERRA;
+//crearArreglo ::= tipoArreglo Identificador LLAVESCUADABRE literal LLAVESCUADCIERRA
+ //              | tipoArreglo Identificador LLAVESCUADABRE Identificador LLAVESCUADCIERRA
+//se pueden operaciones?
+//;
 
 asignarElementoArreglo	::= elementoArreglo  EQ L_ENTERO 
                           | elementoArreglo  EQ  L_CHAR
@@ -287,7 +296,7 @@ estructControl ::= if
 ;
 
 // Produccion de IF
-if	::= IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+if ::= IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
       | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA elif
       | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA else
 ;
@@ -389,7 +398,7 @@ tipoVariable ::= INT {: RESULT = "int"; :}
                | FLOAT {: RESULT = "float"; :} 
                | CHAR {: RESULT = "char"; :} 
                | STRING:s {: RESULT = "string"; :} 
-               | arreglo {: RESULT = "[]"; :} 
+              // | arreglo {: RESULT = "[]"; :} 
 ;
 
 // Produccion de los tipos de arreglo
