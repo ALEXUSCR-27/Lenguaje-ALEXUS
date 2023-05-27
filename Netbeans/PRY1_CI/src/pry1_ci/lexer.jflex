@@ -55,7 +55,7 @@ ComentarioM = "/_" [^*] ~"_/" | "/*" "*"+ "/"
 ComentarioL = "@" {CaracterChar}* {FinLinea}
 
 // Identificador
-Identificador = [:jletter:][:jletterdigit:]*
+Identificador = [a-zA-Z_][a-zA-Z_0-9]*
 
 //Enteros
 Entero = 0 | {EnteroP} | {EnteroN}

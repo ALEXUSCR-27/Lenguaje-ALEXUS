@@ -11,8 +11,14 @@ int imprimirMsg(int as, int df) {
     sysPrint("Hola Mundo")$
     sysPrint("Muy bonito ser TEC")$
     string msg = "Adios"$
-    int x = 10$
+    float x = 10$
+    string f = 123$
+    char as = '1'$
     int y = 12$
+    return mult$
 }
 
-float s() {return 0$}
+float s() {
+    float otra = 0$
+    return otra$
+}

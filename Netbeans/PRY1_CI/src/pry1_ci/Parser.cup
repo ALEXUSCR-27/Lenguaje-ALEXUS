@@ -5,18 +5,20 @@ import java_cup.runtime.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
+import VerificadorTipos;
 /* Errores
-    creacion y asignacion variables de tipo flotante
+    creacion y asignacion variables de tipo flotante revisar bien
     problemas en la declaracion de operaciones
     retornar identificador
 */
 
 action code {:
-    HashMap<String, ArrayList<String>> listaTablasSimbolos = new HashMap<String, ArrayList<String>>();
+    HashMap<String, HashMap<String, String>> listaTablasSimbolos = new HashMap<String, HashMap<String, String>>();
     String tablaActual;
-
+    VerificadorTipos verificador = new VerificadorTipos();
+    
     public void imprimirTabla() {
-        System.out.println("[IMPRIMIENDO TABLA DE SIMBOLOS]\n");
+        /*System.out.println("[IMPRIMIENDO TABLA DE SIMBOLOS]\n");
         for (String key: listaTablasSimbolos.keySet()) {
             System.out.println("Tabla de simbolos Funcion:"+ key);
             System.out.println("Valores del bloque de funcion ");
@@ -24,22 +26,40 @@ action code {:
                 System.out.println(item);
             }
             System.out.println("");
+        }*/
+        System.out.println("[#----------------------Impresion de Tabla de Simbolos----------------------#]\n");
+        
+        for (String i : listaTablasSimbolos.keySet()) {
+            System.out.println("Nombre de funcion = "+ i);
+            HashMap<String, String> temp = listaTablasSimbolos.get(i);
+            for (String j:temp.keySet()) {
+                System.out.println("\t\t| Nombre simbolo:"+j+" Tipo simbolo:"+temp.get(j));
+            }
         }
+        System.out.println("\n[#----------------------Fin Tabla de Simbolos----------------------#]");
     }
+    
+    
+        
+    
+
+
+
+
 :}
 
 
 
 parser code  {: 
     public void report_error(String message, Object info) {
-        String m = "Error ";
+        String m = "Error sintactico ";
         if (info instanceof java_cup.runtime.Symbol) {
             java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
             if (s.left >= 0) {
                 m+="en la linea "+(s.left+1)+" -> ";
             }
         }
-        m+=message;
+        m+="["+message+"]";
         System.err.println(m);
     }
 
@@ -47,36 +67,25 @@ parser code  {:
         report_error(message, info);
         
     }
-
-    private int lineNumber = 1;
-
-    private void incrementLineNumber() {
-        lineNumber++;
-    }
-
-
   
-/*public void syntax_error(Symbol s) {
-    String lexema = s.value.toString();
-    int linea = s.right();
-    int columna = s.left();
+public void semantic_error(String tipo, String valor) {
     
-    System.out.println("[ERROR SINTACTICO] = Lexema: "+" Fila: "+linea+" Columna: "+columna);
+    System.err.println("Error semantico "+tipo+" -> "+valor);
 
-  }*/  
+  }  
 :};
 
 
 
 
 
-// init with {: :};
+//init with {: :};
 //scan with {: return lexer.next_token(); :};
 
 
 
 // Terminales
-terminal MAIN, FIN_EXPRESION;
+terminal FIN_EXPRESION;
 terminal IF, ELSE, ELIF, WHILE, DO, FOR, BREAK, RETURN;
 terminal BOOL, CHAR, FLOAT, INT, STRING;
 
@@ -128,7 +137,7 @@ non terminal operadorNegacion, operadorBinario, operadorRelacional, operadorUnar
 
 // Tipos
 non terminal literal;
-non terminal arreglo, tipoArreglo, elementoArreglo, crearArreglo, asignarElementoArreglo, obtenerDatoArreglo;
+non terminal arreglo, elementoArreglo, crearArreglo, asignarElementoArreglo, obtenerDatoArreglo;
 non terminal tipoVariable, tipoFuncion;
 
 
@@ -142,16 +151,17 @@ precedence left POWER;
 precedence left CONJUNCION;
 precedence left DISYUNCION;
 precedence left IF, ELIF, ELSE;
-precedence left LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, PARENTESISABRE, PARENTESISCIERRA; 
+precedence left LLAVESCORCHETEABRE, LLAVESCORCHETECIERRA, PARENTESISABRE, PARENTESISCIERRA;
+
 
 start with inicio;
 
-/*Programa Principal*/
+//Programa Principal-----------------------------------------------------------------------------------------------------|
 inicio ::= programa {:imprimirTabla();:};
 programa ::= main funciones
            
 ;
-
+//Funcion o funciones----------------------------------------------------------------------------------------------------|
 funciones ::= funciones crearFuncion
             | crearFuncion 
 ;
@@ -173,29 +183,35 @@ bloqueCod ::= sentencia
 sentencia ::= crearVariable FIN_EXPRESION 
             | crearAsignarVariable FIN_EXPRESION
             | asignarVariable FIN_EXPRESION
-            //| crearArreglo FIN_EXPRESION
+           // | crearArreglo FIN_EXPRESION //resolver a nivel semantico
             | asignarElementoArreglo FIN_EXPRESION
             | obtenerDatoArreglo FIN_EXPRESION
             | expresion FIN_EXPRESION
             | funcion FIN_EXPRESION
             | entradaEst:vET FIN_EXPRESION
             | salidaEst FIN_EXPRESION
-           //| error {:System.err.println("Error Sintactico recuperado");:}sentencia
+            | error {:System.err.println("Error Sintactico recuperado");:}sentencia
 
 ;
 
-// Produccion de creacion y asignacion de variables
+
+
+// Produccion de creacion y asignacion de variables---------------------------------------------------------------------------|
 crearVariable ::= tipoVariable:vTV Identificador:vID 
                    {:
-                        System.out.println("[PARSER] Funcion TIPO: "+vTV+" ID: "+vID);
-                        listaTablasSimbolos.get(tablaActual).add(vID.toString()+":"+vTV.toString());
+                        //System.out.println("[PARSER] Funcion TIPO: "+vTV+" ID: "+vID);
+                        listaTablasSimbolos.get(tablaActual).put(vID.toString(), vTV.toString());
                         RESULT = vID;
                     :}
 ;
 
-crearAsignarVariable ::= crearVariable:vID EQ literal 
-{: int x = listaTablasSimbolos.get(tablaActual).indexOf(vID);
-    System.out.println(x);
+crearAsignarVariable ::= crearVariable:vID EQ literal:vL 
+{:
+    String tipo = listaTablasSimbolos.get(tablaActual).get(vID).toString();
+    String valor = vL.toString();
+    
+    if (!verificador.opciones(tipo, valor, vL)) {semantic_error(tipo, valor);}
+    
  :}
                        | crearVariable EQ expresion 
                        | crearVariable EQ Identificador 
@@ -208,12 +224,9 @@ asignarVariable	::= Identificador EQ literal
                   | Identificador EQ funcion 
 ;
 
-// Produccion de arreglos  **crear Arreglo?
-arreglo ::= tipoArreglo LLAVESCUADABRE LLAVESCUADCIERRA;
-//crearArreglo ::= tipoArreglo Identificador LLAVESCUADABRE literal LLAVESCUADCIERRA
- //              | tipoArreglo Identificador LLAVESCUADABRE Identificador LLAVESCUADCIERRA
-//se pueden operaciones?
-//;
+// Produccion de arreglos
+arreglo ::= LLAVESCUADABRE LLAVESCUADCIERRA;
+
 
 asignarElementoArreglo	::= elementoArreglo  EQ L_ENTERO 
                           | elementoArreglo  EQ  L_CHAR
@@ -235,7 +248,7 @@ expresion ::= expresionBinaria
 ;
 
 // Produccion de creacion de funciones
-funcion	::= Identificador:vID PARENTESISABRE PARENTESISCIERRA {: System.out.println("[PARSER] Funcion ID:"+vID); :}
+funcion	::= Identificador:vID PARENTESISABRE PARENTESISCIERRA //{: System.out.println("[PARSER] Funcion ID:"+vID); :}
           | Identificador PARENTESISABRE parametro PARENTESISCIERRA 
 ;
 
@@ -252,13 +265,23 @@ crearFuncion ::= tipoIDFun PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bl
 tipoIDFun ::= tipoFuncion:vTF Identificador:vID 
 {:
     System.out.println("Nueva tabla de simbolos Funcion:"+vID);
-    String tipoTabla = "";
-    if (vID.toString() == "main") tipoTabla = "Funcion main Tipo:"+vTF.toString();
-    else {tipoTabla = "Funcion Tipo:"+vTF.toString();}
-    ArrayList<String> funciones = new ArrayList<String>();
+    //String tipoTabla = "";
+
+   // if (vID.toString().equals("main")) tipoTabla = "Funcion [main], tipo:"+vTF.toString();
+   // else {tipoTabla = "Funcion ["+vID+"], tipo :"+vTF.toString();}
+
+    //ArrayList<String> funciones = new ArrayList<String>();
     tablaActual = vID.toString();
-    funciones.add(tipoTabla);
-    listaTablasSimbolos.put(tablaActual, funciones);
+    //System.out.println(nombreFun);
+    //funciones.add(tipoTabla);
+    
+    HashMap<String, String> datosFuncion = new HashMap<String, String>();
+    datosFuncion.put(tablaActual, vTF.toString());
+
+
+
+    //System.out.println(listaTablasSimbolos);
+    listaTablasSimbolos.put(tablaActual, datosFuncion);
     
     
 :}
@@ -282,8 +305,8 @@ entradaEst ::= SYS_READ PARENTESISABRE L_ENTERO PARENTESISCIERRA
 ;
 
 // Produccion de funcion de salida estandar
-salidaEst ::= SYS_PRINT PARENTESISABRE Identificador:vID PARENTESISCIERRA {: System.out.println("[PARSER] SysPrint Identificador: " +vID); :}
-            | SYS_PRINT PARENTESISABRE literal:vL PARENTESISCIERRA {: System.out.println("[PARSER] SysPrint: " +vL); :}
+salidaEst ::= SYS_PRINT PARENTESISABRE Identificador:vID PARENTESISCIERRA //{: System.out.println("[PARSER] SysPrint Identificador: " +vID); :}
+            | SYS_PRINT PARENTESISABRE literal:vL PARENTESISCIERRA //{: System.out.println("[PARSER] SysPrint: " +vL); :}
 ;
 
 // Produccion de estructuras de control
@@ -327,7 +350,7 @@ for ::= FOR PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueC
 break ::= BREAK FIN_EXPRESION;
 
 // Produccion de RETURN
-return ::= RETURN literal:iDL FIN_EXPRESION {: System.out.println("[PASER] RETURN: "+iDL); :}
+return ::= RETURN literal:iDL FIN_EXPRESION //{: System.out.println("[PASER] RETURN: "+iDL); :}
          | RETURN expresion FIN_EXPRESION
          | RETURN Identificador FIN_EXPRESION
          | RETURN funcion FIN_EXPRESION
@@ -383,7 +406,7 @@ operadorConjuntiva	::= CONJUNCION
 ;
 operando ::= literal:vL {: RESULT = vL; :} 
            | Identificador:vI {: RESULT = vI; :} 
-           | funcion
+           | funcion:vRes {: RESULT = vRes; :}
 ;
 
 // Produccion de los tipos de funcion
@@ -398,12 +421,6 @@ tipoVariable ::= INT {: RESULT = "int"; :}
                | FLOAT {: RESULT = "float"; :} 
                | CHAR {: RESULT = "char"; :} 
                | STRING:s {: RESULT = "string"; :} 
-              // | arreglo {: RESULT = "[]"; :} 
-;
-
-// Produccion de los tipos de arreglo
-tipoArreglo ::= INT
-              | CHAR
 ;
 
 // Produccion de los literales
