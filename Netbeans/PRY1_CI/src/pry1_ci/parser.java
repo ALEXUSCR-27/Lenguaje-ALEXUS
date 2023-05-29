@@ -9,7 +9,7 @@ import java_cup.runtime.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
-import VerificadorTipos;
+import pry1_ci.VerificadorTipos;
 import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
@@ -1441,7 +1441,7 @@ RESULT = vID;
             {
               Object RESULT =null;
 		 
-System.err.println("Error sintactico en la linea "+scanner.getYYLine()+ " [DEFINICION DE ESTRUCTURA DE CONTROL]");
+System.err.println("Error sintactico en la linea "+scanner.getYYLine());
 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("estructControl",18, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1870,19 +1870,19 @@ System.err.println("Error sintactico en la linea "+scanner.getYYLine()+ " [DEFIN
         }
     }
     else if (verificador.verificarString(vOPL)) {
-            String tipo="";
-            if (!verificador.verificarString(vOPR)) {
-                if (verificador.verificarEntero(op2)) tipo = "int";
-                if (verificador.verificarFloat(vOPR)) tipo = "float";
-                if(!(listaTablasSimbolos.get(tablaActual).get(op1)).equals(tipo)) {
+        String tipo="";
+        if (!verificador.verificarString(vOPR)) {
+            if (verificador.verificarEntero(op2)) tipo = "int";
+            if (verificador.verificarFloat(vOPR)) tipo = "float";
+            if(!(listaTablasSimbolos.get(tablaActual).get(op1)).equals(tipo)) {
                      
-                    System.err.println("Error semantico en la linea "+scanner.getYYLine()+" [OPERACION ILEGAL]");
-                }
+                System.err.println("Error semantico en la linea "+scanner.getYYLine()+" [OPERACION ILEGAL]");
             }
+        }
 
         
         else if (verificador.verificarString(vOPR)) {
-            String tipo="";
+            
             if (!verificador.verificarString(vOPL)) {
                 if (verificador.verificarEntero(op2)) tipo = "int";
                 if (verificador.verificarFloat(vOPL)) tipo = "float";
