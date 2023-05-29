@@ -51,7 +51,7 @@ EspacioB = {FinLinea} | [ \t\f]
 /* Comentarios */
 Comentario  = {ComentarioM} | {ComentarioL}
 
-ComentarioM = "/_" [^*] ~"_/" | "/*" "*"+ "/" 
+ComentarioM = "/_" [^*] ~"_/" | "/_" +{CaracterChar}*+ "_/" 
 ComentarioL = "@" {CaracterChar}* {FinLinea}
 
 // Identificador

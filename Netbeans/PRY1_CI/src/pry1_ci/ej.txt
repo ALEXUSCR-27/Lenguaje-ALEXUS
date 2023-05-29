@@ -1,4 +1,6 @@
-
+ /_
+ASDASD
+_/
 int main(){
     int x = 10$
     string msg = "hola"$
@@ -11,14 +13,22 @@ int imprimirMsg(int as, int df) {
     sysPrint("Hola Mundo")$
     sysPrint("Muy bonito ser TEC")$
     string msg = "Adios"$
-    float x = 10$
-    string f = 123$
-    char as = '1'$
-    int y = 12$
+    int f = 123$
+    int x = f+10.5$
+    int as$
+    int alex = msg$
+    if (y>10) {}
+    for (y) {}
+    do{}
+    int as;
     return mult$
 }
-
 float s() {
+    float otra = 0$
+    return otra$
+}
+
+int definir() {
     float otra = 0$
     return otra$
 }

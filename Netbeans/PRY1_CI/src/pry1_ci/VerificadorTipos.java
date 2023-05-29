@@ -66,7 +66,12 @@ public class VerificadorTipos {
     }
     
     public boolean verificarString(Object valor) {
+        try{
             return valor instanceof String;
+        }
+        catch(Exception e) {
+           return false;
+        }
     }
     
 }
