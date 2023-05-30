@@ -5,14 +5,39 @@ t1 = x
 t0 = t1
 y = 10
 msg = hola
+t2 = 0
+return t2
 imprimirMsg_:
 msg = Adios
-f = 123
-x = 10
-t2 = f
-t3 = x
-t2 = t3
+t3 = 123
+t4 = 1
+t5 = t3 + t4
+t6 = 10
+t7 = 16
+t8 = t6 - t7
+t9 = f
+t10 = x
+t9 = t10
 alex = 234234
+arreglo[10] = {}
+t11 = 1
+arreglo[0] = t11
+t12 = 3
+arreglo[1] = t12
+t13 = 55
+arreglo[2] = t13
+t14 = 12
+arreglo[3] = t14
+t15 = 0
+return t15
+if (y>10) goto L0
+goto L1
+L0:
+i = 0
+t16 = 10.3
+return t16
 otra = 0
+palabra = 2we
+cielo = cielo
 definir_:
-otra = 0
+otra = 0.1

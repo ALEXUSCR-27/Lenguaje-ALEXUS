@@ -1,7 +1,6 @@
 
 
 int main(){
-
     int x = 10$
     int y = x$
     y = 10$
@@ -16,29 +15,33 @@ int imprimirMsg(int as, int df) {
     sysPrint("Hola Mundo")$
     sysPrint("Muy bonito ser TEC")$
     string msg = "Adios"$
-    int f = 123$
-    int x = 10$
+    int f = 123 + 1$
+    int x = 10 - 16$
     f = x$
     int as$
     int alex$
     alex = 234234$
     int arreglo[10]$
-    if (y>10) {}
-    for (y) {}
-    do{}
+    arreglo[0] = 1$
+    arreglo[1] = 3$
+    arreglo[2] = 55$
+    arreglo[3] = 12$
+    int y$
+    if (y>10) {return 0$}
+    for (int i=0$i>10$++i) {}
     int as$
     return 10.3$
 }
 
 
-
-
-float s() {
+float calculo() {
     float otra = 0$
+    char palabra = "2we"$
+    string cielo = "cielo"$
     return otra$
 }
 
 int definir() {
-    float otra = 0$
+    float otra = 0.1$
     return otra$
 }

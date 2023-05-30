@@ -23,7 +23,7 @@ _/
 
 float miOtraFun(){
     char x22$
-    if (x22 <= 45 # var > 5.6){
+    if (x22 <= 45){
 	x22 = 10$
 	char ch33 = 'a'$
     } else {

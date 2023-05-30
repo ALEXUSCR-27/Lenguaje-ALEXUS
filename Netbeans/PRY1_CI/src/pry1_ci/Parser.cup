@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.Math;
 import pry1_ci.VerificadorTipos;
    
 
@@ -154,7 +155,7 @@ non terminal estructControl, if, elif, else, while, do, for, condicion, break;
 
 // Expresiones
 non terminal expresion, operando;
-non terminal expresionBinaria, expresionUnaria, expresionRelacion, expresionNegacion, expresionConjuntiva;
+non terminal expresionBinaria, expresionUnaria, expresionRelacion, expresionNegacion, expresionConjuntiva, expresionFor;
 non terminal operadorNegacion, operadorBinario, operadorRelacional, operadorUnario, operadorComparacion, operadorConjuntiva;
 
 // Tipos
@@ -317,26 +318,42 @@ asignarVariable	::= Identificador:vID EQ literal:vL
                   | Identificador EQ funcion 
 ;
 
-crearArreglo ::= crearVariable:vID arreglo
+crearArreglo ::= crearVariable:vID arreglo:vAR
 {:
     String tipo = listaTablasSimbolos.get(tablaActual).get(vID.toString());
     if (!tipo.equals("int") && !tipo.equals("char")) {
         System.err.println("Error semantico en la linea "+scanner.getYYLine()+" [ARREGLO ILEGAL]");
     }
-    
+    String msg = vID.toString()+vAR.toString()+" = {}\n";
+    escribirCodigo(msg);
 :}
 
 ;
 
 // Produccion de arreglos
-arreglo ::= LLAVESCUADABRE literal LLAVESCUADCIERRA;
+arreglo ::= LLAVESCUADABRE literal:vL LLAVESCUADCIERRA
+{:
+    RESULT = "["+vL.toString()+"]";
+:}
+;
 
 
-asignarElementoArreglo	::= elementoArreglo  EQ L_ENTERO 
+asignarElementoArreglo	::= elementoArreglo:vEL  EQ L_ENTERO:vLE 
+{:
+    String temp1 ="t"+t;
+    String var1 = " = "+vLE.toString()+"\n";
+    escribirCodigo(temp1+var1);
+    String msg = vEL.toString()+" = "+temp1+"\n";
+    escribirCodigo(msg);
+    t++;
+:} 
                           | elementoArreglo  EQ  L_CHAR
 ;
-// preguntar
-elementoArreglo	::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA
+
+elementoArreglo	::= Identificador:vID LLAVESCUADABRE L_ENTERO:vE LLAVESCUADCIERRA 
+{: 
+    RESULT = vID.toString()+"["+vE.toString()+"]";
+:}
                   | Identificador LLAVESCUADABRE Identificador LLAVESCUADCIERRA
 ;
 obtenerDatoArreglo ::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA
@@ -349,7 +366,7 @@ obtenerDatoArreglo ::= Identificador LLAVESCUADABRE L_ENTERO LLAVESCUADCIERRA
 
 // -----------------------------------------------[PRODUCCION DE FUNCIONES]----------------------------------------------|
 funcion	::= Identificador:vID PARENTESISABRE PARENTESISCIERRA 
-          | Identificador PARENTESISABRE parametro PARENTESISCIERRA 
+          | Identificador:vID PARENTESISABRE parametro PARENTESISCIERRA 
 ;
 
 crearFuncion ::= tipoIDFun PARENTESISABRE PARENTESISCIERRA LLAVESCORCHETEABRE bloqueCod LLAVESCORCHETECIERRA 
@@ -433,7 +450,17 @@ System.err.println("Error sintactico en la linea "+scanner.getYYLine());
 ;
 
 // Produccion de IF
-if ::= IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+if ::= IF PARENTESISABRE condicion:vCon PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+{:
+    String temp1 = "L"+l;
+    l++;
+    String msg = "if ("+vCon.toString()+") goto "+temp1+"\n";
+    escribirCodigo(msg);
+    String temp2 = "L"+l;
+    l++;
+    escribirCodigo("goto "+temp2+"\n");
+    escribirCodigo(temp1+":\n");
+:}
       | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA elif
       | IF PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA else
 
@@ -461,7 +488,10 @@ bloqueControl ::= bloqueCod
 for ::= FOR PARENTESISABRE condicion PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
       | FOR PARENTESISABRE L_BOOLEANO PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
       | FOR PARENTESISABRE expresionConjuntiva PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
+      | FOR PARENTESISABRE expresionFor PARENTESISCIERRA LLAVESCORCHETEABRE bloqueControl LLAVESCORCHETECIERRA
 ;
+
+expresionFor::= crearAsignarVariable FIN_EXPRESION expresionRelacion FIN_EXPRESION expresionUnaria;
 
 // Produccion de BREAK
 break ::= BREAK FIN_EXPRESION;
@@ -477,6 +507,11 @@ return ::= RETURN literal:vL FIN_EXPRESION
     if (verificador.verificarChar(vL)) tipoL = "char";
     if (verificador.verificarString(vL)) tipoL = "string";
     if (!tipoF.equals(tipoL)) System.err.println("Error semantico en la linea "+scanner.getYYLine()+" [RETURN ILEGAL]");
+    String temp1 = "t"+t;
+    t++;
+    String var1 = temp1+" = "+vL.toString()+"\n";
+    escribirCodigo(var1);
+    escribirCodigo("return "+temp1+"\n");
 :}
 
          | RETURN expresion FIN_EXPRESION
@@ -496,14 +531,14 @@ return ::= RETURN literal:vL FIN_EXPRESION
 
 // Produccion de condicion
 condicion ::= L_BOOLEANO 
-            | expresionRelacion 
+            | expresionRelacion:vER {: RESULT = vER.toString(); :}
             | expresionNegacion
 ;
 
 //----------------------------------------------------[PRODUCCION DE EXPRESIONES]--------------------------------------------|
 expresion ::= expresionBinaria:vRes
             | expresionUnaria 
-            | expresionRelacion 
+            | expresionRelacion:vER 
             | expresionNegacion 
             | expresionConjuntiva
 ;
@@ -537,7 +572,7 @@ expresionRelacion ::= operando:vOPL operadorRelacional:vOR operando:vOPR {:
             System.err.println("Error semantico en la linea  "+scanner.getYYLine()+ " [OPERACION RELACIONAL INVALIDA]");
         }
     }
-    RESULT = "true"; //revisar
+    RESULT = op1+vOR.toString()+op2; 
 :}
                     | operando operadorComparacion operando
 ;
@@ -616,16 +651,42 @@ expresionBinaria ::= operando:vOPL operadorBinario:vOB operando:vOPR
         int e1 = Integer.parseInt(op1);
 
         int e2 = Integer.parseInt(op2);
-        switch(op3) {
-            case "+":
+        if (op3.equals("+")) {
+     
+                String temps ="t"+t;
+                String vars1 = temps+" = "+op1+"\n";
+                escribirCodigo(vars1);
+                t++;
+                String temps2 ="t"+t;
+                String vars2 = temps2+" = "+op2+"\n";
+                escribirCodigo(vars2);
+                t++;
+                String temps3 ="t"+t;
+                escribirCodigo(temps3+" = "+temps+" + "+temps2+"\n");
+                t++;
                 RESULT = e1+e2;
-                break;
-
-            case "-":   
+        }
+        else if (op3.equals("-")) {
+            
+                String tempm1 ="t"+t;
+                String varm1 = tempm1+" = "+op1+"\n";
+                escribirCodigo(varm1);
+                t++;
+                String tempm2 ="t"+t;
+                String varm2 = tempm2+" = "+op2+"\n";
+                escribirCodigo(varm2);
+                t++;
+                String tempm3 ="t"+t;
+                escribirCodigo(tempm3+" = "+tempm1+" - "+tempm2+"\n");
+                t++;
                 RESULT = e1-e2;
-            case "*":
+          
+        }
+        else if (op3.equals("*")) {
+          
                 RESULT = e1*e2;
-            case "/":
+        }
+        else if (op3.equals("/")) {
                 if (e2 != 0) {
                     RESULT = e1/e2;
                 }
@@ -633,13 +694,14 @@ expresionBinaria ::= operando:vOPL operadorBinario:vOB operando:vOPR
                     System.err.println("Error semantico en la linea "+scanner.getYYLine()+ " [OPERACION ILEGAL]");
                     RESULT = "0";
                 }
+        }
+        
                 
-            case "**":
-                RESULT = e1+e2;
-            case "~":
+        else if (op3.equals("**")) {
+                RESULT = Math.pow(e1,e2);
+        }
+        else if (op3.equals("%")){
                 RESULT = e1%e2;
-            default:
-                break;
         }
     }
 
@@ -677,11 +739,21 @@ expresionBinaria ::= operando:vOPL operadorBinario:vOB operando:vOPR
             RESULT = "0";
         }
     }
-        
-
-
+ /*       
+    String temp1 ="t"+t;
+    String var1 = temp1+" = "+vIL.toString()+"\n";
+    escribirCodigo(var1);
+    t++;
+    String temp2 ="t"+t;
+    String var2 = temp2+" = "+vIR.toString()+"\n";
+    escribirCodigo(var2);
+    escribirCodigo(temp1+" = "+temp2+"\n");
+    t++;
+*/
     
 :}
+        | operando operadorBinario operando  operadorBinario operando 
+        | operando operadorBinario operando  operadorBinario expresionBinaria
 ;
 operadorBinario ::= PLUS {: RESULT = "+"; :}
                   | MINUS {: RESULT = "-"; :}
