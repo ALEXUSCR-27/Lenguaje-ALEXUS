@@ -7,10 +7,18 @@ package pry1_ci;
 /**
  *
  * @author asmal
+ * Clase para realizar analisis y verificaciones de tipos
  */
 public class VerificadorTipos {
     public VerificadorTipos(){}
     
+    /**
+     * @param String tipo
+     * @param String valor
+     * @param Object valor2
+     * @return Valor Booleano
+     * Funcion para redirigir a alguna de las verificaciones
+     */
     public boolean opciones(String tipo, String valor, Object valor2) {
         switch(tipo){
             case "int":
@@ -34,6 +42,11 @@ public class VerificadorTipos {
         return false;
     }
     
+    /**
+     * @param String valor
+     * @return Valor Booleano
+     * Funcion para verificar si una cadena de carateres puede ser entero
+     */
     public boolean verificarEntero(String valor) {
         try{
             Integer.parseInt(valor);
@@ -45,10 +58,14 @@ public class VerificadorTipos {
         
     }
     
-    public boolean verificarBooleano(String valor) {
+    /**
+     * @param String valor
+     * @return Valor Booleano
+     * Funcion para verificar si una cadena de carateres puede ser booleano
+     */
+    public boolean verificarBooleano(Object valor) {
         try{
-            Boolean.parseBoolean(valor);
-            return true;
+            return valor instanceof Boolean; 
         }
         catch(NumberFormatException e) {
             return false;
@@ -56,15 +73,30 @@ public class VerificadorTipos {
         
     }
     
+    /**
+     * @param Object valor
+     * @return Valor Booleano
+     * Funcion para verificar si un objeto es flotante
+     */
     public boolean verificarFloat(Object valor) {
         return valor instanceof Float;
     }
     
+    /**
+     * @param Object valor
+     * @return Valor Booleano
+     * Funcion para verificar si un objeto puede ser char
+     */
     public boolean verificarChar(Object valor) {
         return valor instanceof Character;
         
     }
     
+    /**
+     * @param Object valor
+     * @return Valor Booleano
+     * Funcion para verificar si un objeto puede ser String
+     */
     public boolean verificarString(Object valor) {
         try{
             return valor instanceof String;

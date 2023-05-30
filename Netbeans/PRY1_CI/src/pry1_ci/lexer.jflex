@@ -67,7 +67,7 @@ FlotanteC = 0 \. [0-9]+
 FlotanteP = {EnteroP} \. [0-9]+
 FlotanteN = - ({FlotanteC}|{FlotanteP})
 
-Boolean = T | F
+//Boolean = true | false
 
 %state CADENA, CHAR
 
@@ -102,8 +102,8 @@ Boolean = T | F
 
 <YYINITIAL> "sysPrint" {return symbol(sym.SYS_PRINT);}
 <YYINITIAL> "sysRead" {return symbol(sym.SYS_READ);}
-//<YYINITIAL> "main" {return symbol(sym.MAIN);}
-
+<YYINITIAL> "false" {return symbol(sym.L_BOOLEANO, false);}
+<YYINITIAL> "true" {return symbol(sym.L_BOOLEANO, true);}
 	
 <YYINITIAL> {
 
@@ -138,6 +138,7 @@ Boolean = T | F
     "!="    {return symbol(sym.NOT_EQ);}
     "**"    {return symbol(sym.POWER);}
     "~"     {return symbol(sym.MODULO);}
+    "\n"    {return symbol(sym.SALTO);}
 
     // Literales
 	// Numeros
@@ -145,7 +146,7 @@ Boolean = T | F
 	{Flotante}	{return symbol(sym.L_FLOTANTE, Float.valueOf(yytext()));}
 	
 	// Booleanos
-	{Boolean} {return symbol(sym.L_BOOLEANO);}
+	//{Boolean} {return symbol(sym.L_BOOLEANO);}
     
 
     \'			{yybegin(CHAR);}

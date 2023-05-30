@@ -128,14 +128,18 @@ public class PRY1_CI {
         reader.read();
         LexerAS lexer = new LexerAS(new FileReader (rutaEJ1));
         try {
-        parser p = new parser(lexer);
-        Object result = p.parse();
+            String raiz = System.getProperty("user.dir");
+            Files.deleteIfExists(Paths.get(raiz+"\\src/pry1_ci\\codigoIntermedio.txt"));
+            String rutaCodigo = "src/pry1_ci/codigoIntermedio.txt";
+            File codigo = new File(rutaCodigo);
+            codigo.createNewFile();
+            parser p = new parser(lexer);
+            Object result = p.parse();
+        
         }catch (Exception e) {
-                System.err.println("Error al intentar realizar analisis: " + e.getMessage());
+            System.err.println("Error al intentar realizar analisis: " + e.getMessage());
+            System.err.println("El archivo no se puede compilar");
         }
-      
-                //Object result = p.parse().value;
-                //System.out.println("El archivo se puede compilar.");
            
     }
     

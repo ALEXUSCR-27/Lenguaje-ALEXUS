@@ -8,55 +8,56 @@ package pry1_ci;
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */
-  public static final int LLAVESCUADCIERRA = 43;
-  public static final int PLUSPLUS = 32;
-  public static final int STRING_LITERAL = 49;
-  public static final int POWER = 26;
+  public static final int LLAVESCUADCIERRA = 44;
+  public static final int PLUSPLUS = 33;
+  public static final int STRING_LITERAL = 50;
+  public static final int POWER = 27;
   public static final int CHAR = 12;
-  public static final int L_BOOLEANO = 47;
-  public static final int PARENTESISCIERRA = 38;
+  public static final int L_BOOLEANO = 48;
+  public static final int PARENTESISCIERRA = 39;
   public static final int FIN_EXPRESION = 2;
-  public static final int SEMI = 44;
-  public static final int GREATER_THAN_OR_EQ = 35;
+  public static final int SEMI = 45;
+  public static final int GREATER_THAN_OR_EQ = 36;
   public static final int INT = 14;
-  public static final int L_FLOTANTE = 46;
+  public static final int L_FLOTANTE = 47;
   public static final int FOR = 8;
-  public static final int MINUS = 23;
-  public static final int GREATER_THAN = 33;
-  public static final int LESS_THAN_OR_EQ = 36;
-  public static final int SYS_READ = 18;
-  public static final int PARENTESISABRE = 37;
-  public static final int L_CHAR = 48;
-  public static final int L_ENTERO = 45;
+  public static final int MINUS = 24;
+  public static final int GREATER_THAN = 34;
+  public static final int LESS_THAN_OR_EQ = 37;
+  public static final int SYS_READ = 19;
+  public static final int PARENTESISABRE = 38;
+  public static final int L_CHAR = 49;
+  public static final int L_ENTERO = 46;
   public static final int BOOL = 11;
-  public static final int PLUS = 20;
+  public static final int PLUS = 21;
   public static final int IF = 3;
-  public static final int LLAVESCORCHETECIERRA = 40;
+  public static final int LLAVESCORCHETECIERRA = 41;
   public static final int EOF = 0;
-  public static final int MINUSMINUS = 31;
+  public static final int MINUSMINUS = 32;
   public static final int RETURN = 10;
-  public static final int SYS_PRINT = 17;
+  public static final int SYS_PRINT = 18;
   public static final int error = 1;
-  public static final int COMA = 41;
+  public static final int COMA = 42;
   public static final int COMENTARIO = 16;
-  public static final int MODULO = 27;
-  public static final int NEGACION = 28;
-  public static final int EQEQ = 19;
+  public static final int MODULO = 28;
+  public static final int NEGACION = 29;
+  public static final int EQEQ = 20;
   public static final int BREAK = 9;
-  public static final int EQ = 21;
-  public static final int DIVI = 24;
-  public static final int TIMES = 22;
+  public static final int EQ = 22;
+  public static final int DIVI = 25;
+  public static final int TIMES = 23;
   public static final int ELSE = 4;
-  public static final int NOT_EQ = 25;
+  public static final int NOT_EQ = 26;
   public static final int WHILE = 6;
-  public static final int LLAVESCORCHETEABRE = 39;
-  public static final int Identificador = 50;
+  public static final int LLAVESCORCHETEABRE = 40;
+  public static final int Identificador = 51;
   public static final int FLOAT = 13;
-  public static final int CONJUNCION = 29;
+  public static final int CONJUNCION = 30;
   public static final int STRING = 15;
-  public static final int LLAVESCUADABRE = 42;
-  public static final int DISYUNCION = 30;
-  public static final int LESS_THAN = 34;
+  public static final int LLAVESCUADABRE = 43;
+  public static final int DISYUNCION = 31;
+  public static final int SALTO = 17;
+  public static final int LESS_THAN = 35;
   public static final int ELIF = 5;
   public static final int DO = 7;
   public static final String[] terminalNames = new String[] {
@@ -77,6 +78,7 @@ public class sym {
   "INT",
   "STRING",
   "COMENTARIO",
+  "SALTO",
   "SYS_PRINT",
   "SYS_READ",
   "EQEQ",

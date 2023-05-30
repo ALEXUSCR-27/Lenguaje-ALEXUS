@@ -1,0 +1,18 @@
+main_:
+x = 10
+t0 = y
+t1 = x
+t0 = t1
+y = 10
+msg = hola
+imprimirMsg_:
+msg = Adios
+f = 123
+x = 10
+t2 = f
+t3 = x
+t2 = t3
+alex = 234234
+otra = 0
+definir_:
+otra = 0
